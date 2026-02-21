@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient Registration - Login</title>
+    <!-- <link rel="stylesheet" href="../css/otp_styles.css" /> -->
+    <link rel="stylesheet" href="css/otp_styles.css" />
+
+    <style></style>
+  </head>
+  <body>
+    <div class="login-container">
+      <header>
+        <h2>Online registration of Patients</h2>
+      </header>
+
+      <div class="content">
+        <input
+          type="text"
+          id="phoneInput"
+          placeholder="enter phone number"
+          maxlength="10"
+        />
+
+        <button class="btn-otp" onclick="handleLogin()">GET OTP</button>
+
+        <p class="message">Enter your registered mobile number to proceed.</p>
+      </div>
+    </div>
+
+    <script>
+      function handleLogin() {
+        const phone = document.getElementById("phoneInput").value;
+
+        // Basic validation: Check if it's a 10-digit number
+        if (phone.length === 10 && !isNaN(phone)) {
+          // This is the part that opens your "index.html" file
+          // Make sure index.html is in the same folder as this file!
+          window.location.href = "login.html";
+        } else {
+          alert("Please enter a valid 10-digit phone number.");
+        }
+      }
+    </script>
+  </body>
+</html>

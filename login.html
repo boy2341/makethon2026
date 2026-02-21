@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient Registration</title>
+    <link rel="stylesheet" href="css/login_styles.css" />
+
+    <style></style>
+  </head>
+
+  <body>
+    <div class="page-frame">
+      <header>
+        <h1>Online registration of Patients</h1>
+      </header>
+      <div class="form-container">
+        <button
+          type="button"
+          id="locBtn"
+          class="loc-btn"
+          onclick="getLocation()"
+        >
+          📍 Step 1: Detect My Location
+        </button>
+
+        <form id="registrationForm">
+          <input type="hidden" id="lat" name="latitude" />
+          <input type="hidden" id="lng" name="longitude" />
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Disease</label><input type="text" required />
+            </div>
+            <div class="form-group">
+              <label>Age</label><input type="number" required />
+            </div>
+            <div class="form-group">
+              <label>Gender</label>
+              <select>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Non-Binary</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Insurance</label>
+              <select>
+                <option>Yes</option>
+                <option>No</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="upload-box">
+            <label>📄 Lab Report (PDF)</label>
+            <input
+              type="file"
+              accept="application/pdf"
+              style="margin-bottom: 15px"
+            />
+            <label>📸 Take Photo of Report</label>
+            <input
+              type="file"
+              id="cameraInput"
+              accept="image/*"
+              capture="environment"
+            />
+            <img id="preview-img" alt="Preview" />
+          </div>
+
+          <button type="submit" class="submit-btn">
+            Register & Find Hospitals
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function getLocation() {
+        const btn = document.getElementById("locBtn");
+        if (navigator.geolocation) {
+          btn.innerText = "Locating...";
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              document.getElementById("lat").value = pos.coords.latitude;
+              document.getElementById("lng").value = pos.coords.longitude;
+              btn.innerText = "📍 Location Verified";
+              btn.style.background = "#21ba6e";
+            },
+            () => alert("Enable GPS to find hospitals."),
+          );
+        }
+      }
+
+      document
+        .getElementById("cameraInput")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              const img = document.getElementById("preview-img");
+              img.src = event.target.result;
+              img.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+
+      document
+        .getElementById("registrationForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const lat = document.getElementById("lat").value;
+          const lng = document.getElementById("lng").value;
+
+          if (!lat || !lng) {
+            alert("Please detect your location first!");
+            return;
+          }
+
+          // Redirect to second page with coordinates in URL
+          // window.location.href = `hospitals.html?lat=${lat}&lng=${lng}`;
+          window.location.href = `hospitals.html?lat=${lat}&lng=${lng}`;
+        });
+    </script>
+  </body>
+</html>
