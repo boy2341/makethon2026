@@ -1,649 +1,334 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nearest Hospitals — Jeevan-Setu</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      /* ── Reset & Base ── */
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <title>Nearest Hospitals — Jeevan-Setu</title>
+  <style>
+    :root {
+      --bg:          #F5F3EE;
+      --white:       #FFFFFF;
+      --ink:         #1A1A2E;
+      --muted:       #7A7D8C;
+      --border:      #DDD9D0;
+      --border-dark: #C8C3B8;
+      --teal:        #0D6E6E;
+      --teal-light:  #E6F4F4;
+      --teal-hover:  #0A5858;
+      --green:       #2D7A4F;
+      --green-lt:    #E8F5EE;
+      --red:         #C0392B;
+      --red-lt:      #FDECEA;
+      --gold:        #C8941A;
+      --card-shadow: 0 2px 12px rgba(13,110,110,0.07), 0 1px 3px rgba(0,0,0,0.04);
+      --radius:      12px;
+      --radius-sm:   8px;
+      --sans:        'IBM Plex Sans', system-ui, sans-serif;
+      --mono:        'IBM Plex Mono', 'Courier New', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { background: var(--bg); font-family: var(--sans); color: var(--ink); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 99px; }
 
-      :root {
-        --bg: #f9f8f5;
-        --white: #ffffff;
-        --ink: #111318;
-        --muted: #6b7280;
-        --border: #e5e3dc;
-        --accent: #c0392b;
-        --accent-pale: #fdf0ee;
-        --green: #0d7a4e;
-        --green-pale: #ebfaf3;
-        --gold: #c8941a;
-        --card-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
-        --serif: 'Instrument Serif', serif;
-        --sans: 'DM Sans', sans-serif;
-      }
+    /* Header */
+    .topbar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: rgba(245,243,238,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+    .wordmark { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); background: var(--teal-light); border: 1px solid rgba(13,110,110,0.18); padding: 4px 10px; border-radius: 99px; }
+    #locBadge { display: flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 11px; color: var(--muted); background: var(--white); border: 1px solid var(--border); padding: 5px 12px; border-radius: 100px; max-width: 260px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .loc-pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; animation: pulse 1.4s ease-in-out infinite; }
+    .loc-pulse.loading { background: var(--gold); }
+    .loc-pulse.error { background: var(--red); animation: none; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
 
-      body {
-        font-family: var(--sans);
-        background: var(--bg);
-        color: var(--ink);
-        font-size: 14px;
-        line-height: 1.6;
-        min-height: 100vh;
-      }
+    /* Page layout */
+    .page { display: grid; grid-template-columns: 1fr 320px; gap: 28px; max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; }
+    @media (max-width: 860px) { .page { grid-template-columns: 1fr; } .right { order: -1; } }
 
-      /* ── Top bar ── */
-      .topbar {
-        position: sticky; top: 0; z-index: 100;
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 14px 28px;
-        background: rgba(255,255,255,0.92);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid var(--border);
-      }
+    /* Section */
+    .section-eyebrow { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); margin-bottom: 8px; }
+    .section-title { font-size: clamp(28px, 5vw, 44px); font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
 
-      .brand {
-        font-family: var(--serif);
-        font-size: 20px; color: var(--ink); letter-spacing: -0.01em;
-      }
-      .brand em { color: var(--accent); font-style: italic; }
+    /* Source tabs */
+    .source-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+    .src-tab { padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); background: var(--white); font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .src-tab:hover { border-color: var(--teal); color: var(--ink); }
+    .src-tab.active { background: var(--teal); border-color: var(--teal); color: var(--white); }
 
-      #locBadge {
-        display: flex; align-items: center; gap: 7px;
-        font-size: 12px; color: var(--muted);
-        background: var(--bg); border: 1px solid var(--border);
-        padding: 5px 12px; border-radius: 100px;
-        max-width: 260px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-      }
+    /* Hospital grid */
+    .hospital-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
 
-      .loc-pulse {
-        width: 8px; height: 8px; border-radius: 50%;
-        background: var(--green); flex-shrink: 0;
-        animation: pulse 1.4s ease-in-out infinite;
-      }
-      .loc-pulse.loading { background: #f59e0b; }
-      .loc-pulse.error   { background: var(--accent); animation: none; }
+    /* Skeleton */
+    .skeleton-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 10px; min-height: 180px; }
+    .skeleton { background: linear-gradient(90deg, #ECE9E0 25%, #F5F3EE 50%, #ECE9E0 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 4px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-      @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50%       { opacity: 0.5; transform: scale(0.85); }
-      }
+    /* Hospital card */
+    .hcard { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 8px; box-shadow: var(--card-shadow); transition: transform 0.15s, box-shadow 0.15s; position: relative; }
+    .hcard:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.08); }
+    .hcard-rank { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .hcard-rank.top { color: var(--gold); background: #FEF9E7; padding: 2px 8px; border-radius: 99px; display: inline-block; }
+    .hcard-name { font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+    .hcard-location { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
+    .hcard-divider { height: 1px; background: var(--border); margin: 4px 0; }
+    .hcard-stats { display: flex; gap: 16px; }
+    .hstat { display: flex; flex-direction: column; gap: 1px; }
+    .hstat-val { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .hstat-lbl { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .hcard-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+    .htag { font-family: var(--mono); font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px; background: var(--bg); color: var(--muted); letter-spacing: 0.03em; }
+    .htag-spec { background: var(--teal-light); color: var(--teal); }
+    .htag-em { background: var(--red-lt); color: var(--red); font-weight: 700; }
+    .htag-source-db { background: var(--green-lt); color: var(--green); }
+    .htag-source-osm { background: #FFFBEB; color: #92400E; }
+    .hcard-dist { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .hcard-directions { display: block; width: 100%; margin-top: 6px; padding: 8px; border-radius: var(--radius-sm); background: var(--teal-light); border: 1px solid rgba(13,110,110,0.2); font-size: 12px; font-weight: 600; color: var(--teal); text-align: center; text-decoration: none; transition: background 0.15s, color 0.15s; }
+    .hcard-directions:hover { background: var(--teal); color: var(--white); }
 
-      /* ── Page layout ── */
-      .page {
-        display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 28px;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 36px 28px 60px;
-      }
+    /* State boxes */
+    .state-box { grid-column: 1/-1; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px 24px; text-align: center; }
+    .state-box .icon { font-size: 32px; margin-bottom: 10px; }
+    .state-box h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .state-box p { font-size: 13px; color: var(--muted); max-width: 300px; margin: 0 auto; }
 
-      @media (max-width: 860px) {
-        .page { grid-template-columns: 1fr; }
-        .right { order: -1; }
-      }
+    /* Right panel */
+    .right { display: flex; flex-direction: column; gap: 16px; }
+    .panel-label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
 
-      /* ── Left section ── */
-      .section-eyebrow {
-        font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
-        text-transform: uppercase; color: var(--accent);
-        margin-bottom: 8px;
-      }
+    /* Emergency hero */
+    .emergency-hero { background: linear-gradient(135deg, var(--red), #96281B); border-radius: var(--radius); padding: 22px 20px; text-align: center; color: var(--white); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .ambulance-icon { font-size: 32px; margin-bottom: 6px; }
+    .emergency-label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.8; }
+    .emergency-number { font-size: 52px; font-weight: 600; line-height: 1; letter-spacing: -0.03em; }
+    .emergency-sub { font-size: 12px; opacity: 0.75; margin-bottom: 8px; }
+    .call-btn { display: inline-block; padding: 10px 24px; border-radius: 100px; background: var(--white); color: var(--red); font-size: 13px; font-weight: 700; text-decoration: none; letter-spacing: 0.02em; transition: transform 0.1s; }
+    .call-btn:hover { transform: scale(1.03); }
 
-      .section-title {
-        font-family: var(--serif);
-        font-size: clamp(32px, 5vw, 48px);
-        line-height: 1.1; letter-spacing: -0.02em;
-        margin-bottom: 10px;
-      }
-      .section-title em { color: var(--accent); font-style: italic; }
+    /* Helplines */
+    .helplines { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow); }
+    .helpline-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 16px; border-bottom: 1px solid var(--border); gap: 10px; }
+    .helpline-item:last-child { border-bottom: none; }
+    .hl-left { display: flex; flex-direction: column; gap: 1px; }
+    .hl-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+    .hl-desc { font-size: 11px; color: var(--muted); }
+    .hl-num { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--red); text-decoration: none; letter-spacing: 0.02em; padding: 4px 10px; border-radius: var(--radius-sm); background: var(--red-lt); transition: background 0.15s; }
+    .hl-num:hover { background: #FAD7D3; }
 
-      .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+    /* Tip box */
+    .tip-box { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius); padding: 14px 16px; font-size: 12px; line-height: 1.6; color: #78350F; }
+    .tip-box strong { display: block; margin-bottom: 4px; }
 
-      /* ── Source toggle ── */
-      .source-tabs {
-        display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap;
-      }
+    /* API status */
+    .api-status-bar { display: none; margin-bottom: 16px; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; align-items: center; gap: 8px; }
+    .api-status-bar.err  { display: flex; background: var(--red-lt); color: var(--red); border: 1px solid rgba(192,57,43,0.25); }
+    .api-status-bar.warn { display: flex; background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+    .api-status-bar.info { display: flex; background: var(--green-lt); color: var(--green); border: 1px solid rgba(45,122,79,0.25); }
 
-      .src-tab {
-        padding: 6px 14px; border-radius: 100px;
-        border: 1px solid var(--border); background: var(--white);
-        font-size: 12px; font-weight: 500; color: var(--muted);
-        cursor: pointer; transition: all 0.15s;
-      }
-      .src-tab:hover { border-color: var(--accent); color: var(--ink); }
-      .src-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
 
-      /* ── Hospital grid ── */
-      .hospital-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 14px;
-      }
+  <div class="topbar">
+    <span class="wordmark">Jeevan-Setu</span>
+    <div id="locBadge">
+      <span class="loc-pulse loading" id="locDot"></span>
+      <span id="locText">Detecting location…</span>
+    </div>
+  </div>
 
-      /* ── Skeleton ── */
-      .skeleton-card {
-        background: var(--white);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 18px;
-        display: flex; flex-direction: column; gap: 10px;
-        min-height: 180px;
-      }
+  <div class="page">
+    <!-- LEFT: Hospital grid -->
+    <div class="left">
+      <div class="section-eyebrow">Emergency · Based on your location</div>
+      <h1 class="section-title">Nearest<br>Hospitals</h1>
+      <p class="section-sub" id="sectionSub">Searching for hospitals near you…</p>
 
-      .skeleton {
-        background: linear-gradient(90deg, #ece9e0 25%, #f5f3ee 50%, #ece9e0 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.4s infinite;
-        border-radius: 4px;
-      }
+      <div class="api-status-bar" id="apiStatusBar"></div>
 
-      @keyframes shimmer {
-        0%   { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-      }
+      <div class="source-tabs" id="sourceTabs" style="display:none;">
+        <button class="src-tab active" data-src="all"      onclick="filterSource('all')">All</button>
+        <button class="src-tab"        data-src="database" onclick="filterSource('database')">📋 Our Database</button>
+        <button class="src-tab"        data-src="osm"      onclick="filterSource('osm')">🗺 Live Map</button>
+      </div>
 
-      /* ── Hospital card ── */
-      .hcard {
-        background: var(--white);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 18px;
-        display: flex; flex-direction: column; gap: 8px;
-        box-shadow: var(--card-shadow);
-        transition: transform 0.15s, box-shadow 0.15s;
-        position: relative;
-      }
-
-      .hcard:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      }
-
-      .hcard-rank {
-        font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
-        text-transform: uppercase; color: var(--muted);
-      }
-      .hcard-rank.top {
-        color: var(--gold);
-        background: #fef9e7; padding: 2px 8px;
-        border-radius: 100px; display: inline-block;
-      }
-
-      .hcard-name {
-        font-size: 15px; font-weight: 600;
-        color: var(--ink); line-height: 1.3;
-      }
-
-      .hcard-location {
-        display: flex; align-items: center; gap: 4px;
-        font-size: 12px; color: var(--muted);
-      }
-
-      .hcard-divider {
-        height: 1px; background: var(--border); margin: 4px 0;
-      }
-
-      .hcard-stats {
-        display: flex; gap: 16px;
-      }
-
-      .hstat {
-        display: flex; flex-direction: column; gap: 1px;
-      }
-
-      .hstat-val { font-size: 13px; font-weight: 600; color: var(--ink); }
-      .hstat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-
-      .hcard-tags {
-        display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px;
-      }
-
-      .htag {
-        font-size: 10px; font-weight: 500;
-        padding: 2px 7px; border-radius: 4px;
-        background: #f3f4f6; color: var(--muted);
-        letter-spacing: 0.03em;
-      }
-
-      .htag-spec {
-        background: #eef3fe; color: #1a56db;
-      }
-
-      .htag-em {
-        background: var(--accent-pale); color: var(--accent);
-        font-weight: 700;
-      }
-
-      .htag-source-db  { background: #f0fdf4; color: var(--green); }
-      .htag-source-osm { background: #fffbeb; color: #92400e; }
-
-      .hcard-dist {
-        display: flex; align-items: center; gap: 4px;
-        font-size: 12px; color: var(--muted); margin-top: 4px;
-      }
-
-      .hcard-directions {
-        display: block; width: 100%; margin-top: 6px;
-        padding: 8px; border-radius: 8px;
-        background: var(--bg); border: 1px solid var(--border);
-        font-size: 12px; font-weight: 600; color: var(--ink);
-        text-align: center; text-decoration: none;
-        transition: background 0.15s;
-      }
-      .hcard-directions:hover { background: var(--border); }
-
-      /* ── State boxes ── */
-      .state-box {
-        grid-column: 1 / -1;
-        background: var(--white); border: 1px solid var(--border);
-        border-radius: 14px; padding: 40px 24px;
-        text-align: center;
-      }
-      .state-box .icon { font-size: 32px; margin-bottom: 10px; }
-      .state-box h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
-      .state-box p { font-size: 13px; color: var(--muted); max-width: 300px; margin: 0 auto; }
-
-      /* ── Right panel ── */
-      .right {
-        display: flex; flex-direction: column; gap: 16px;
-      }
-
-      .panel-label {
-        font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
-        text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
-      }
-
-      /* ── Emergency hero ── */
-      .emergency-hero {
-        background: linear-gradient(135deg, #c0392b, #96281b);
-        border-radius: 14px; padding: 22px 20px;
-        text-align: center; color: #fff;
-        display: flex; flex-direction: column; align-items: center; gap: 4px;
-      }
-
-      .ambulance-icon { font-size: 32px; margin-bottom: 6px; }
-      .emergency-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
-      .emergency-number { font-size: 52px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; }
-      .emergency-sub { font-size: 12px; opacity: 0.75; margin-bottom: 8px; }
-
-      .call-btn {
-        display: inline-block;
-        padding: 10px 24px; border-radius: 100px;
-        background: #fff; color: var(--accent);
-        font-size: 13px; font-weight: 700;
-        text-decoration: none; letter-spacing: 0.02em;
-        transition: transform 0.1s;
-      }
-      .call-btn:hover { transform: scale(1.03); }
-
-      /* ── Helplines ── */
-      .helplines {
-        background: var(--white); border: 1px solid var(--border);
-        border-radius: 14px; overflow: hidden;
-      }
-
-      .helpline-item {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 11px 16px; border-bottom: 1px solid var(--border);
-        gap: 10px;
-      }
-      .helpline-item:last-child { border-bottom: none; }
-
-      .hl-left { display: flex; flex-direction: column; gap: 1px; }
-      .hl-name { font-size: 13px; font-weight: 600; color: var(--ink); }
-      .hl-desc { font-size: 11px; color: var(--muted); }
-
-      .hl-num {
-        font-size: 15px; font-weight: 700; color: var(--accent);
-        text-decoration: none; letter-spacing: 0.02em;
-        padding: 4px 10px; border-radius: 8px;
-        background: var(--accent-pale);
-        transition: background 0.15s;
-      }
-      .hl-num:hover { background: #fad7d3; }
-
-      /* ── Tip box ── */
-      .tip-box {
-        background: #fffbeb; border: 1px solid #fde68a;
-        border-radius: 12px; padding: 14px 16px;
-        font-size: 12px; line-height: 1.6; color: #78350f;
-      }
-      .tip-box strong { display: block; margin-bottom: 4px; }
-
-      /* ── API status bar ── */
-      .api-status-bar {
-        display: none;
-        margin-bottom: 16px; padding: 10px 14px;
-        border-radius: 8px; font-size: 12px; font-weight: 500;
-        align-items: center; gap: 8px;
-      }
-      .api-status-bar.err  { display: flex; background: var(--accent-pale); color: var(--accent); border: 1px solid #fca5a5; }
-      .api-status-bar.warn { display: flex; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
-      .api-status-bar.info { display: flex; background: var(--green-pale); color: var(--green); border: 1px solid #6ee7b7; }
-    </style>
-  </head>
-  <body>
-
-    <!-- Top bar -->
-    <div class="topbar">
-      <div class="brand">Jeevan-<em>Setu</em></div>
-      <div id="locBadge">
-        <span class="loc-pulse loading" id="locDot"></span>
-        <span id="locText">Detecting location…</span>
+      <div class="hospital-grid" id="hospitalGrid">
+        <div class="skeleton-card"><div class="skeleton" style="height:12px;width:40%;border-radius:6px"></div><div class="skeleton" style="height:18px;width:80%;border-radius:6px"></div><div class="skeleton" style="height:12px;width:55%;border-radius:6px"></div><div style="flex:1"></div><div class="skeleton" style="height:36px;border-radius:8px"></div></div>
+        <div class="skeleton-card"><div class="skeleton" style="height:12px;width:40%;border-radius:6px"></div><div class="skeleton" style="height:18px;width:70%;border-radius:6px"></div><div class="skeleton" style="height:12px;width:50%;border-radius:6px"></div><div style="flex:1"></div><div class="skeleton" style="height:36px;border-radius:8px"></div></div>
+        <div class="skeleton-card"><div class="skeleton" style="height:12px;width:35%;border-radius:6px"></div><div class="skeleton" style="height:18px;width:75%;border-radius:6px"></div><div class="skeleton" style="height:12px;width:60%;border-radius:6px"></div><div style="flex:1"></div><div class="skeleton" style="height:36px;border-radius:8px"></div></div>
       </div>
     </div>
 
-    <!-- Page -->
-    <div class="page">
-
-      <!-- LEFT: Hospital grid -->
-      <div class="left">
-        <div class="section-eyebrow">Emergency · Based on your location</div>
-        <h1 class="section-title">Nearest<br /><em>Hospitals</em></h1>
-        <p class="section-sub" id="sectionSub">Searching for hospitals near you…</p>
-
-        <!-- API status bar -->
-        <div class="api-status-bar" id="apiStatusBar"></div>
-
-        <!-- Source filter tabs -->
-        <div class="source-tabs" id="sourceTabs" style="display:none;">
-          <button class="src-tab active" data-src="all"    onclick="filterSource('all')">All</button>
-          <button class="src-tab"        data-src="database" onclick="filterSource('database')">📋 Our Database</button>
-          <button class="src-tab"        data-src="osm"    onclick="filterSource('osm')">🗺 Live Map</button>
-        </div>
-
-        <div class="hospital-grid" id="hospitalGrid">
-          <!-- Skeletons while loading -->
-          <div class="skeleton-card">
-            <div class="skeleton" style="height:12px;width:40%;border-radius:6px"></div>
-            <div class="skeleton" style="height:18px;width:80%;border-radius:6px"></div>
-            <div class="skeleton" style="height:12px;width:55%;border-radius:6px"></div>
-            <div style="flex:1"></div>
-            <div class="skeleton" style="height:36px;border-radius:8px"></div>
-          </div>
-          <div class="skeleton-card">
-            <div class="skeleton" style="height:12px;width:40%;border-radius:6px"></div>
-            <div class="skeleton" style="height:18px;width:70%;border-radius:6px"></div>
-            <div class="skeleton" style="height:12px;width:50%;border-radius:6px"></div>
-            <div style="flex:1"></div>
-            <div class="skeleton" style="height:36px;border-radius:8px"></div>
-          </div>
-          <div class="skeleton-card">
-            <div class="skeleton" style="height:12px;width:35%;border-radius:6px"></div>
-            <div class="skeleton" style="height:18px;width:75%;border-radius:6px"></div>
-            <div class="skeleton" style="height:12px;width:60%;border-radius:6px"></div>
-            <div style="flex:1"></div>
-            <div class="skeleton" style="height:36px;border-radius:8px"></div>
-          </div>
-          <div class="skeleton-card">
-            <div class="skeleton" style="height:12px;width:45%;border-radius:6px"></div>
-            <div class="skeleton" style="height:18px;width:65%;border-radius:6px"></div>
-            <div class="skeleton" style="height:12px;width:52%;border-radius:6px"></div>
-            <div style="flex:1"></div>
-            <div class="skeleton" style="height:36px;border-radius:8px"></div>
-          </div>
+    <!-- RIGHT: Emergency panel -->
+    <div class="right">
+      <div>
+        <div class="panel-label">Emergency Helplines</div>
+        <div class="emergency-hero">
+          <span class="ambulance-icon">🚑</span>
+          <div class="emergency-label">National Ambulance</div>
+          <div class="emergency-number">108</div>
+          <div class="emergency-sub">Free · 24 / 7 · All India</div>
+          <a class="call-btn" href="tel:108">Call 108 Now</a>
         </div>
       </div>
 
-      <!-- RIGHT: Emergency panel -->
-      <div class="right">
-        <div>
-          <div class="panel-label">Emergency Helplines</div>
-          <div class="emergency-hero">
-            <span class="ambulance-icon">🚑</span>
-            <div class="emergency-label">National Ambulance</div>
-            <div class="emergency-number">108</div>
-            <div class="emergency-sub">Free · 24 / 7 · All India</div>
-            <a class="call-btn" href="tel:108">Call 108 Now</a>
-          </div>
+      <div class="helplines">
+        <div class="helpline-item">
+          <div class="hl-left"><span class="hl-name">Police</span><span class="hl-desc">Emergency response</span></div>
+          <a class="hl-num" href="tel:100">100</a>
         </div>
+        <div class="helpline-item">
+          <div class="hl-left"><span class="hl-name">Fire Brigade</span><span class="hl-desc">Fire &amp; rescue</span></div>
+          <a class="hl-num" href="tel:101">101</a>
+        </div>
+        <div class="helpline-item">
+          <div class="hl-left"><span class="hl-name">PMSS Ambulance</span><span class="hl-desc">Andhra Pradesh</span></div>
+          <a class="hl-num" href="tel:104">104</a>
+        </div>
+        <div class="helpline-item">
+          <div class="hl-left"><span class="hl-name">National Emergency</span><span class="hl-desc">Unified helpline</span></div>
+          <a class="hl-num" href="tel:112">112</a>
+        </div>
+        <div class="helpline-item">
+          <div class="hl-left"><span class="hl-name">Women Helpline</span><span class="hl-desc">24 / 7 support</span></div>
+          <a class="hl-num" href="tel:1091">1091</a>
+        </div>
+      </div>
 
-        <div class="helplines">
-          <div class="helpline-item">
-            <div class="hl-left"><span class="hl-name">Police</span><span class="hl-desc">Emergency response</span></div>
-            <a class="hl-num" href="tel:100">100</a>
-          </div>
-          <div class="helpline-item">
-            <div class="hl-left"><span class="hl-name">Fire Brigade</span><span class="hl-desc">Fire &amp; rescue</span></div>
-            <a class="hl-num" href="tel:101">101</a>
-          </div>
-          <div class="helpline-item">
-            <div class="hl-left"><span class="hl-name">PMSS Ambulance</span><span class="hl-desc">Andhra Pradesh</span></div>
-            <a class="hl-num" href="tel:104">104</a>
-          </div>
-          <div class="helpline-item">
-            <div class="hl-left"><span class="hl-name">National Emergency</span><span class="hl-desc">Unified helpline</span></div>
-            <a class="hl-num" href="tel:112">112</a>
-          </div>
-          <div class="helpline-item">
-            <div class="hl-left"><span class="hl-name">Women Helpline</span><span class="hl-desc">24 / 7 support</span></div>
-            <a class="hl-num" href="tel:1091">1091</a>
-          </div>
-        </div>
-
-        <div class="tip-box">
-          <strong>💡 Quick tip</strong>
-          When calling 108, stay on the line. Share your exact location, the
-          patient's condition, and your phone number so the dispatcher can
-          track and guide you.
-        </div>
+      <div class="tip-box">
+        <strong>💡 Quick tip</strong>
+        When calling 108, stay on the line. Share your exact location, the patient's condition, and your phone number so the dispatcher can track and guide you.
       </div>
     </div>
+  </div>
 
-    <script>
-      const API = 'http://localhost:8000';
+  <script>
+    const API = 'http://localhost:8000';
+    let allHospitals = [];
+    let currentSource = 'all';
 
-      // All fetched hospitals stored here for filtering
-      let allHospitals = [];
-      let currentSource = 'all';
+    function renderStars(r) {
+      let s = '';
+      for (let i = 1; i <= 5; i++)
+        s += `<span style="color:${i <= Math.round(r) ? '#C8941A' : '#ddd'};font-size:11px">★</span>`;
+      return s;
+    }
 
-      // ── Helpers ──────────────────────────────────────────────────────────────
+    function mapsLink(name, lat, lon) {
+      const q = encodeURIComponent(lat && lon ? `${lat},${lon}` : name);
+      return `https://www.google.com/maps/search/?api=1&query=${q}`;
+    }
 
-      function renderStars(r) {
-        let s = '';
-        for (let i = 1; i <= 5; i++)
-          s += `<span style="color:${i <= Math.round(r) ? '#c8941a' : '#ddd'};font-size:11px">★</span>`;
-        return s;
-      }
+    function renderCard(h, rank) {
+      const isTop = rank === 1;
+      const isDB = h.source === 'database';
+      const sourceTag = isDB
+        ? `<span class="htag htag-source-db">📋 Our DB</span>`
+        : `<span class="htag htag-source-osm">🗺 Live</span>`;
+      const emergTag = h.emergency === 'yes' ? `<span class="htag htag-em">🚨 Emergency</span>` : '';
+      const schemes = isDB && h.schemes
+        ? h.schemes.split(',').slice(0, 2).map(s => `<span class="htag">${s.trim()}</span>`).join('') : '';
+      const specTag = (h.specialisation || h.spec)
+        ? `<span class="htag htag-spec">${h.specialisation || h.spec}</span>` : '';
+      const bedsTag = h.beds
+        ? `<div class="hstat"><span class="hstat-val">${h.beds}</span><span class="hstat-lbl">Beds</span></div>` : '';
+      const ratingTag = h.rating
+        ? `<div class="hstat"><span class="hstat-val">${h.rating} ${renderStars(h.rating)}</span><span class="hstat-lbl">Rating</span></div>` : '';
+      const lat = h.coordinates?.lat ?? h.lat;
+      const lon = h.coordinates?.lon ?? h.lon;
+      const dist = h.distance_km != null
+        ? `<div class="hcard-dist">📍 ${h.distance_km} km away</div>` : '';
 
-      function mapsLink(name, lat, lon) {
-        const q = encodeURIComponent(lat && lon ? `${lat},${lon}` : name);
-        return `https://www.google.com/maps/search/?api=1&query=${q}`;
-      }
+      return `
+        <div class="hcard" data-source="${h.source}">
+          <div class="hcard-rank ${isTop ? 'top' : ''}">${isTop ? '⭐ Nearest' : '#' + rank}</div>
+          <div class="hcard-name">${esc(h.name || h.id)}</div>
+          <div class="hcard-location">📍 ${esc(h.city || h.address || '—')}${h.state ? ', ' + esc(h.state) : ''}</div>
+          <div class="hcard-divider"></div>
+          <div class="hcard-stats">${ratingTag}${bedsTag}</div>
+          <div class="hcard-tags">${sourceTag}${emergTag}${specTag}${schemes}</div>
+          ${dist}
+          <a class="hcard-directions" href="${mapsLink(h.name || h.id, lat, lon)}" target="_blank" rel="noopener">🗺 Get Directions</a>
+        </div>`;
+    }
 
-      function renderCard(h, rank) {
-        const isTop    = rank === 1;
-        const isDB     = h.source === 'database';
-        const sourceTag = isDB
-          ? `<span class="htag htag-source-db">📋 Our DB</span>`
-          : `<span class="htag htag-source-osm">🗺 Live</span>`;
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c =>
+        ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
 
-        const emergTag = h.emergency === 'yes'
-          ? `<span class="htag htag-em">🚨 Emergency</span>` : '';
-
-        const schemes = isDB && h.schemes
-          ? h.schemes.split(',').slice(0, 2).map(s =>
-              `<span class="htag">${s.trim()}</span>`).join('')
-          : '';
-
-        const specTag = (h.specialisation || h.spec)
-          ? `<span class="htag htag-spec">${h.specialisation || h.spec}</span>` : '';
-
-        const bedsTag = h.beds
-          ? `<div class="hstat"><span class="hstat-val">${h.beds}</span><span class="hstat-lbl">Beds</span></div>` : '';
-
-        const ratingTag = h.rating
-          ? `<div class="hstat"><span class="hstat-val">${h.rating} ${renderStars(h.rating)}</span><span class="hstat-lbl">Rating</span></div>` : '';
-
-        const lat = h.coordinates?.lat ?? h.lat;
-        const lon = h.coordinates?.lon ?? h.lon;
-        const dist = h.distance_km != null
-          ? `<div class="hcard-dist">
-               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-               ${h.distance_km} km away
-             </div>` : '';
-
-        return `
-          <div class="hcard" data-source="${h.source}">
-            <div class="hcard-rank ${isTop ? 'top' : ''}">${isTop ? '⭐ Nearest' : '#' + rank}</div>
-            <div class="hcard-name">${esc(h.name || h.id)}</div>
-            <div class="hcard-location">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-              ${esc(h.city || h.address || '—')}${h.state ? ', ' + esc(h.state) : ''}
-            </div>
-            <div class="hcard-divider"></div>
-            <div class="hcard-stats">${ratingTag}${bedsTag}</div>
-            <div class="hcard-tags">${sourceTag}${emergTag}${specTag}${schemes}</div>
-            ${dist}
-            <a class="hcard-directions" href="${mapsLink(h.name || h.id, lat, lon)}" target="_blank" rel="noopener">
-              🗺 Get Directions
-            </a>
-          </div>`;
-      }
-
-      function esc(s) {
-        return String(s ?? '').replace(/[&<>"']/g, c =>
-          ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])
-        );
-      }
-
-      // ── Filter by source tab ──────────────────────────────────────────────────
-
-      function filterSource(src) {
-        currentSource = src;
-        document.querySelectorAll('.src-tab').forEach(t => {
-          t.classList.toggle('active', t.dataset.src === src);
-        });
-
-        const filtered = src === 'all'
-          ? allHospitals
-          : allHospitals.filter(h => h.source === src);
-
-        if (!filtered.length) {
-          document.getElementById('hospitalGrid').innerHTML = `
-            <div class="state-box">
-              <div class="icon">🔍</div>
-              <h3>No results</h3>
-              <p>No hospitals found for this filter. Try "All".</p>
-            </div>`;
-        } else {
-          document.getElementById('hospitalGrid').innerHTML =
-            filtered.map((h, i) => renderCard(h, i + 1)).join('');
-        }
-      }
-
-      // ── Status bar helper ─────────────────────────────────────────────────────
-
-      function setStatus(type, msg) {
-        const bar = document.getElementById('apiStatusBar');
-        bar.className = `api-status-bar ${type}`;
-        bar.textContent = msg;
-      }
-
-      // ── Fetch from backend ────────────────────────────────────────────────────
-
-      async function loadHospitals(lat, lon) {
-        try {
-          const res = await fetch(
-            `${API}/api/hospitals/nearby?lat=${lat}&lon=${lon}&condition=&radius=50`,
-            { signal: AbortSignal.timeout(10000) }
-          );
-
-          if (!res.ok) throw new Error(`Server returned ${res.status}`);
-
-          const data = await res.json();
-
-          // Merge database + OSM results, both already have distance_km
-          const dbHospitals  = (data.database_hospitals || []).map(h => ({ ...h, source: 'database' }));
-          const osmHospitals = (data.osm_hospitals || []).map(h => ({ ...h, source: 'osm' }));
-
-          // Sort merged list by distance
-          allHospitals = [...dbHospitals, ...osmHospitals]
-            .filter(h => h.distance_km != null)
-            .sort((a, b) => a.distance_km - b.distance_km);
-
-          if (!allHospitals.length) {
-            document.getElementById('hospitalGrid').innerHTML = `
-              <div class="state-box">
-                <div class="icon">🏥</div>
-                <h3>No hospitals found</h3>
-                <p>No hospitals found within 50 km of your location in our database.</p>
-              </div>`;
-            document.getElementById('sectionSub').textContent = 'No results near you.';
-            return;
-          }
-
-          const total = allHospitals.length;
-          const dbCount  = dbHospitals.length;
-          const osmCount = osmHospitals.length;
-
-          document.getElementById('sectionSub').textContent =
-            `Showing ${total} hospitals near you — ${dbCount} from our database, ${osmCount} from live map`;
-
-          setStatus('info', `✓ Loaded ${total} hospitals (${dbCount} from our database · ${osmCount} from OpenStreetMap)`);
-
-          // Show tabs only if both sources have results
-          if (dbCount > 0 && osmCount > 0) {
-            document.getElementById('sourceTabs').style.display = 'flex';
-          }
-
-          filterSource('all');
-
-        } catch (err) {
-          console.error('API error:', err);
-
-          // Show offline message + fallback notice
-          setStatus('err', `⚠ Could not reach backend (${err.message}). Make sure "node index.js" is running.`);
-
-          document.getElementById('hospitalGrid').innerHTML = `
-            <div class="state-box">
-              <div class="icon">🔌</div>
-              <h3>Backend offline</h3>
-              <p>Start your server with <strong>node index.js</strong> and refresh this page.</p>
-            </div>`;
-          document.getElementById('sectionSub').textContent = 'Could not load hospital data.';
-        }
-      }
-
-      // ── Geolocation ───────────────────────────────────────────────────────────
-
-      const locDot  = document.getElementById('locDot');
-      const locText = document.getElementById('locText');
-
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            const { latitude: lat, longitude: lng } = pos.coords;
-            locDot.classList.remove('loading');
-            locText.textContent = `${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E`;
-            loadHospitals(lat, lng);
-          },
-          err => {
-            locDot.classList.remove('loading');
-            locDot.classList.add('error');
-            locText.textContent = 'Location denied';
-
-            // Fallback: Anantpur, Andhra Pradesh
-            const FALLBACK_LAT = 14.693, FALLBACK_LON = 77.6;
-            setStatus('warn', '⚠ Location access denied — showing hospitals near Anantpur (default fallback).');
-            document.getElementById('sectionSub').textContent =
-              'Showing hospitals near Anantpur (location access denied)';
-            loadHospitals(FALLBACK_LAT, FALLBACK_LON);
-          },
-          { enableHighAccuracy: true, timeout: 10000 }
-        );
+    function filterSource(src) {
+      currentSource = src;
+      document.querySelectorAll('.src-tab').forEach(t => t.classList.toggle('active', t.dataset.src === src));
+      const filtered = src === 'all' ? allHospitals : allHospitals.filter(h => h.source === src);
+      if (!filtered.length) {
+        document.getElementById('hospitalGrid').innerHTML = `<div class="state-box"><div class="icon">🔍</div><h3>No results</h3><p>No hospitals found for this filter. Try "All".</p></div>`;
       } else {
-        locDot.classList.add('error');
-        locText.textContent = 'Not supported';
-        loadHospitals(14.693, 77.6);
+        document.getElementById('hospitalGrid').innerHTML = filtered.map((h, i) => renderCard(h, i + 1)).join('');
       }
-    </script>
-  </body>
+    }
+
+    function setStatus(type, msg) {
+      const bar = document.getElementById('apiStatusBar');
+      bar.className = `api-status-bar ${type}`;
+      bar.textContent = msg;
+    }
+
+    async function loadHospitals(lat, lon) {
+      try {
+        const res = await fetch(`${API}/api/hospitals/nearby?lat=${lat}&lon=${lon}&condition=&radius=50`, { signal: AbortSignal.timeout(10000) });
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        const data = await res.json();
+        const dbHospitals = (data.database_hospitals || []).map(h => ({ ...h, source: 'database' }));
+        const osmHospitals = (data.osm_hospitals || []).map(h => ({ ...h, source: 'osm' }));
+        allHospitals = [...dbHospitals, ...osmHospitals].filter(h => h.distance_km != null).sort((a, b) => a.distance_km - b.distance_km);
+        if (!allHospitals.length) {
+          document.getElementById('hospitalGrid').innerHTML = `<div class="state-box"><div class="icon">🏥</div><h3>No hospitals found</h3><p>No hospitals found within 50 km of your location.</p></div>`;
+          document.getElementById('sectionSub').textContent = 'No results near you.';
+          return;
+        }
+        const total = allHospitals.length, dbCount = dbHospitals.length, osmCount = osmHospitals.length;
+        document.getElementById('sectionSub').textContent = `Showing ${total} hospitals near you — ${dbCount} from our database, ${osmCount} from live map`;
+        setStatus('info', `✓ Loaded ${total} hospitals (${dbCount} from our database · ${osmCount} from OpenStreetMap)`);
+        if (dbCount > 0 && osmCount > 0) document.getElementById('sourceTabs').style.display = 'flex';
+        filterSource('all');
+      } catch (err) {
+        setStatus('err', `⚠ Could not reach backend (${err.message}). Make sure your server is running.`);
+        document.getElementById('hospitalGrid').innerHTML = `<div class="state-box"><div class="icon">🔌</div><h3>Backend offline</h3><p>Start your server with <strong>node index.js</strong> and refresh this page.</p></div>`;
+        document.getElementById('sectionSub').textContent = 'Could not load hospital data.';
+      }
+    }
+
+    const locDot = document.getElementById('locDot');
+    const locText = document.getElementById('locText');
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const { latitude: lat, longitude: lng } = pos.coords;
+          locDot.classList.remove('loading');
+          locText.textContent = `${lat.toFixed(4)}°N, ${lng.toFixed(4)}°E`;
+          loadHospitals(lat, lng);
+        },
+        err => {
+          locDot.classList.remove('loading');
+          locDot.classList.add('error');
+          locText.textContent = 'Location denied';
+          const FALLBACK_LAT = 14.693, FALLBACK_LON = 77.6;
+          setStatus('warn', '⚠ Location access denied — showing hospitals near Anantpur (default fallback).');
+          document.getElementById('sectionSub').textContent = 'Showing hospitals near Anantpur (location access denied)';
+          loadHospitals(FALLBACK_LAT, FALLBACK_LON);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      locDot.classList.add('error');
+      locText.textContent = 'Not supported';
+      loadHospitals(14.693, 77.6);
+    }
+  </script>
+</body>
 </html>
