@@ -1,410 +1,431 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Patient Referral — Jeevan-Setu</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<style>
-  .lang-toggle {
-    display: flex; align-items: center;
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 100px; padding: 3px; gap: 2px;
-  }
-  .lang-btn {
-    padding: 3px 10px; border: none; border-radius: 100px;
-    background: transparent; font-family: var(--mono);
-    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
-    color: var(--muted); cursor: pointer; transition: all 0.2s;
-  }
-  .lang-btn.active {
-    background: var(--white); color: var(--ink);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Referral — Jeevan-Setu</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      padding: 3px 10px;
+      border: none;
+      border-radius: 100px;
+      background: transparent;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .lang-btn.active {
+      background: var(--white);
+      color: var(--ink);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrap">
+  <div class="wrap">
 
-  <!-- Header -->
-  <div class="hd">
-    <div class="hd-top">
-      <span class="wordmark">Jeevan-Setu</span>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div class="lang-toggle">
-          <button class="lang-btn active" id="btnEn" onclick="setLang('en')">EN</button>
-          <button class="lang-btn"        id="btnHi" onclick="setLang('hi')">हि</button>
+    <!-- Header -->
+    <div class="hd">
+      <div class="hd-top">
+        <span class="wordmark">Jeevan-Setu</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="lang-toggle">
+            <button class="lang-btn active" id="btnEn" onclick="setLang('en')">EN</button>
+            <button class="lang-btn" id="btnHi" onclick="setLang('hi')">हि</button>
+          </div>
+          <div id="apiStatus"><span class="dot"></span><span id="apiTxt">connecting</span></div>
         </div>
-        <div id="apiStatus"><span class="dot"></span><span id="apiTxt">connecting</span></div>
       </div>
+      <h1 data-en="Patient Referral" data-hi="रोगी रेफरल">Patient Referral</h1>
+      <p class="sub" data-en="Submit details to receive AI-matched hospital recommendations."
+        data-hi="AI-मिलान अस्पताल सिफारिशें प्राप्त करने के लिए विवरण दर्ज करें।">
+        Submit details to receive AI-matched hospital recommendations.
+      </p>
     </div>
-    <h1 data-en="Patient Referral" data-hi="रोगी रेफरल">Patient Referral</h1>
-    <p class="sub" data-en="Submit details to receive AI-matched hospital recommendations." data-hi="AI-मिलान अस्पताल सिफारिशें प्राप्त करने के लिए विवरण दर्ज करें।">
-      Submit details to receive AI-matched hospital recommendations.
-    </p>
+
+    <div class="prog-track">
+      <div class="prog-fill" id="prog"></div>
+    </div>
+
+    <form id="form" novalidate>
+
+      <!-- Personal -->
+      <div class="card">
+        <div class="card-head">
+          <span>👤</span>
+          <span class="card-head-label" data-en="Personal" data-hi="व्यक्तिगत">Personal</span>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label data-en="Full Name" data-hi="पूरा नाम">Full Name <span class="req">*</span></label>
+            <input type="text" id="name" data-ph-en="Patient full name" data-ph-hi="रोगी का पूरा नाम"
+              placeholder="Patient full name" autocomplete="off">
+          </div>
+          <div class="row-2">
+            <div class="field">
+              <label data-en="Age" data-hi="आयु">Age <span class="req">*</span></label>
+              <input type="number" id="age" data-ph-en="Years" data-ph-hi="वर्ष" placeholder="Years" min="1" max="120">
+            </div>
+            <div class="field">
+              <label data-en="Current Hospital" data-hi="वर्तमान अस्पताल">Current Hospital <span
+                  class="req">*</span></label>
+              <input type="text" id="hospital" data-ph-en="Hospital name" data-ph-hi="अस्पताल का नाम"
+                placeholder="Hospital name">
+            </div>
+          </div>
+          <div class="field">
+            <label data-en="Gender" data-hi="लिंग">Gender <span class="req">*</span></label>
+            <div class="toggles" id="genderGroup">
+              <button type="button" class="tog" data-val="male" data-en="Male" data-hi="पुरुष">Male</button>
+              <button type="button" class="tog" data-val="female" data-en="Female" data-hi="महिला">Female</button>
+              <button type="button" class="tog" data-val="other" data-en="Other" data-hi="अन्य">Other</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medical -->
+      <div class="card">
+        <div class="card-head">
+          <span>🩺</span>
+          <span class="card-head-label" data-en="Medical" data-hi="चिकित्सा">Medical</span>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label data-en="Referral Condition" data-hi="रेफरल स्थिति">Referral Condition <span
+                class="req">*</span></label>
+            <select id="disease">
+              <option value="" data-en="Select condition…" data-hi="स्थिति चुनें…">Select condition…</option>
+              <option value="cardiology" data-en="Cardiology" data-hi="हृदय रोग">Cardiology</option>
+              <option value="neurology" data-en="Neurology" data-hi="तंत्रिका विज्ञान">Neurology</option>
+              <option value="oncology" data-en="Oncology" data-hi="कैंसर विज्ञान">Oncology</option>
+              <option value="orthopedics" data-en="Orthopedics" data-hi="हड्डी रोग">Orthopedics</option>
+              <option value="gastroenterology" data-en="Gastroenterology" data-hi="पाचन रोग">Gastroenterology</option>
+              <option value="pulmonology" data-en="Pulmonology" data-hi="फेफड़े रोग">Pulmonology</option>
+              <option value="nephrology" data-en="Nephrology" data-hi="गुर्दा रोग">Nephrology</option>
+              <option value="endocrinology" data-en="Endocrinology" data-hi="अंतःस्राव विज्ञान">Endocrinology</option>
+              <option value="psychiatry" data-en="Psychiatry" data-hi="मनोचिकित्सा">Psychiatry</option>
+              <option value="pediatrics" data-en="Pediatrics" data-hi="बाल रोग">Pediatrics</option>
+              <option value="gynecology" data-en="Gynecology" data-hi="स्त्री रोग">Gynecology</option>
+              <option value="dermatology" data-en="Dermatology" data-hi="त्वचा रोग">Dermatology</option>
+              <option value="ophthalmology" data-en="Ophthalmology" data-hi="नेत्र रोग">Ophthalmology</option>
+              <option value="other" data-en="Other" data-hi="अन्य">Other</option>
+            </select>
+          </div>
+          <div class="field" id="otherField" style="display:none;">
+            <label data-en="Specify Condition" data-hi="स्थिति बताएं">Specify Condition <span
+                class="req">*</span></label>
+            <input type="text" id="otherDisease" data-ph-en="Describe the condition…" data-ph-hi="स्थिति का वर्णन करें…"
+              placeholder="Describe the condition…">
+          </div>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="card">
+        <div class="card-head">
+          <span>📍</span>
+          <span class="card-head-label" data-en="Location" data-hi="स्थान">Location</span>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <label data-en="GPS" data-hi="GPS">GPS</label>
+            <button type="button" class="geo-btn" id="geoBtn" onclick="getGeo()">
+              <span id="geoIcon">◎</span>
+              <span id="geoTxt" data-en="Detect my location" data-hi="मेरा स्थान पहचानें">Detect my location</span>
+            </button>
+            <div class="geo-coords" id="geoResult"></div>
+          </div>
+          <div class="field">
+            <label data-en="Address (optional)" data-hi="पता (वैकल्पिक)">Address (optional)</label>
+            <input type="text" id="address" data-ph-en="Area or address" data-ph-hi="क्षेत्र या पता"
+              placeholder="Area or address">
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="card">
+        <div class="card-head">
+          <span>📋</span>
+          <span class="card-head-label" data-en="Status" data-hi="स्थिति">Status</span>
+        </div>
+        <div class="card-body">
+          <div class="row-2">
+            <div class="field">
+              <label data-en="Income Level" data-hi="आय स्तर">Income Level <span class="req">*</span></label>
+              <div class="toggles" id="bplGroup">
+                <button type="button" class="tog" data-val="below" data-en="Below BPL" data-hi="BPL से नीचे">Below
+                  BPL</button>
+                <button type="button" class="tog" data-val="above" data-en="Above BPL" data-hi="BPL से ऊपर">Above
+                  BPL</button>
+              </div>
+            </div>
+            <div class="field">
+              <label data-en="Disability" data-hi="विकलांगता">Disability <span class="req">*</span></label>
+              <div class="toggles" id="disabledGroup">
+                <button type="button" class="tog" data-val="yes" data-en="Disabled" data-hi="विकलांग">Disabled</button>
+                <button type="button" class="tog" data-val="no" data-en="Not Disabled" data-hi="विकलांग नहीं">Not
+                  Disabled</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn" data-en="Submit Referral" data-hi="रेफरल जमा करें">Submit
+        Referral</button>
+    </form>
+
+    <div class="err-banner" id="errBanner"></div>
+
   </div>
+  <script>
+    const API = 'http://localhost:8000'; // Change this to your actual API endpoint
+    const sel = {};
+    let gps = null;
+    let currentLang = 'en';
 
-  <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
-
-  <form id="form" novalidate>
-
-    <!-- Personal -->
-    <div class="card">
-      <div class="card-head">
-        <span>👤</span>
-        <span class="card-head-label" data-en="Personal" data-hi="व्यक्तिगत">Personal</span>
-      </div>
-      <div class="card-body">
-        <div class="field">
-          <label data-en="Full Name" data-hi="पूरा नाम">Full Name <span class="req">*</span></label>
-          <input type="text" id="name"
-            data-ph-en="Patient full name" data-ph-hi="रोगी का पूरा नाम"
-            placeholder="Patient full name" autocomplete="off">
-        </div>
-        <div class="row-2">
-          <div class="field">
-            <label data-en="Age" data-hi="आयु">Age <span class="req">*</span></label>
-            <input type="number" id="age"
-              data-ph-en="Years" data-ph-hi="वर्ष"
-              placeholder="Years" min="1" max="120">
-          </div>
-          <div class="field">
-            <label data-en="Current Hospital" data-hi="वर्तमान अस्पताल">Current Hospital <span class="req">*</span></label>
-            <input type="text" id="hospital"
-              data-ph-en="Hospital name" data-ph-hi="अस्पताल का नाम"
-              placeholder="Hospital name">
-          </div>
-        </div>
-        <div class="field">
-          <label data-en="Gender" data-hi="लिंग">Gender <span class="req">*</span></label>
-          <div class="toggles" id="genderGroup">
-            <button type="button" class="tog" data-val="male"   data-en="Male"   data-hi="पुरुष">Male</button>
-            <button type="button" class="tog" data-val="female" data-en="Female" data-hi="महिला">Female</button>
-            <button type="button" class="tog" data-val="other"  data-en="Other"  data-hi="अन्य">Other</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Medical -->
-    <div class="card">
-      <div class="card-head">
-        <span>🩺</span>
-        <span class="card-head-label" data-en="Medical" data-hi="चिकित्सा">Medical</span>
-      </div>
-      <div class="card-body">
-        <div class="field">
-          <label data-en="Referral Condition" data-hi="रेफरल स्थिति">Referral Condition <span class="req">*</span></label>
-          <select id="disease">
-            <option value=""                data-en="Select condition…"      data-hi="स्थिति चुनें…">Select condition…</option>
-            <option value="cardiology"      data-en="Cardiology"             data-hi="हृदय रोग">Cardiology</option>
-            <option value="neurology"       data-en="Neurology"              data-hi="तंत्रिका विज्ञान">Neurology</option>
-            <option value="oncology"        data-en="Oncology"               data-hi="कैंसर विज्ञान">Oncology</option>
-            <option value="orthopedics"     data-en="Orthopedics"            data-hi="हड्डी रोग">Orthopedics</option>
-            <option value="gastroenterology" data-en="Gastroenterology"      data-hi="पाचन रोग">Gastroenterology</option>
-            <option value="pulmonology"     data-en="Pulmonology"            data-hi="फेफड़े रोग">Pulmonology</option>
-            <option value="nephrology"      data-en="Nephrology"             data-hi="गुर्दा रोग">Nephrology</option>
-            <option value="endocrinology"   data-en="Endocrinology"          data-hi="अंतःस्राव विज्ञान">Endocrinology</option>
-            <option value="psychiatry"      data-en="Psychiatry"             data-hi="मनोचिकित्सा">Psychiatry</option>
-            <option value="pediatrics"      data-en="Pediatrics"             data-hi="बाल रोग">Pediatrics</option>
-            <option value="gynecology"      data-en="Gynecology"             data-hi="स्त्री रोग">Gynecology</option>
-            <option value="dermatology"     data-en="Dermatology"            data-hi="त्वचा रोग">Dermatology</option>
-            <option value="ophthalmology"   data-en="Ophthalmology"          data-hi="नेत्र रोग">Ophthalmology</option>
-            <option value="other"           data-en="Other"                  data-hi="अन्य">Other</option>
-          </select>
-        </div>
-        <div class="field" id="otherField" style="display:none;">
-          <label data-en="Specify Condition" data-hi="स्थिति बताएं">Specify Condition <span class="req">*</span></label>
-          <input type="text" id="otherDisease"
-            data-ph-en="Describe the condition…" data-ph-hi="स्थिति का वर्णन करें…"
-            placeholder="Describe the condition…">
-        </div>
-      </div>
-    </div>
-
-    <!-- Location -->
-    <div class="card">
-      <div class="card-head">
-        <span>📍</span>
-        <span class="card-head-label" data-en="Location" data-hi="स्थान">Location</span>
-      </div>
-      <div class="card-body">
-        <div class="field">
-          <label data-en="GPS" data-hi="GPS">GPS</label>
-          <button type="button" class="geo-btn" id="geoBtn" onclick="getGeo()">
-            <span id="geoIcon">◎</span>
-            <span id="geoTxt" data-en="Detect my location" data-hi="मेरा स्थान पहचानें">Detect my location</span>
-          </button>
-          <div class="geo-coords" id="geoResult"></div>
-        </div>
-        <div class="field">
-          <label data-en="Address (optional)" data-hi="पता (वैकल्पिक)">Address (optional)</label>
-          <input type="text" id="address"
-            data-ph-en="Area or address" data-ph-hi="क्षेत्र या पता"
-            placeholder="Area or address">
-        </div>
-      </div>
-    </div>
-
-    <!-- Status -->
-    <div class="card">
-      <div class="card-head">
-        <span>📋</span>
-        <span class="card-head-label" data-en="Status" data-hi="स्थिति">Status</span>
-      </div>
-      <div class="card-body">
-        <div class="row-2">
-          <div class="field">
-            <label data-en="Income Level" data-hi="आय स्तर">Income Level <span class="req">*</span></label>
-            <div class="toggles" id="bplGroup">
-              <button type="button" class="tog" data-val="below" data-en="Below BPL" data-hi="BPL से नीचे">Below BPL</button>
-              <button type="button" class="tog" data-val="above" data-en="Above BPL" data-hi="BPL से ऊपर">Above BPL</button>
-            </div>
-          </div>
-          <div class="field">
-            <label data-en="Disability" data-hi="विकलांगता">Disability <span class="req">*</span></label>
-            <div class="toggles" id="disabledGroup">
-              <button type="button" class="tog" data-val="yes" data-en="Disabled"     data-hi="विकलांग">Disabled</button>
-              <button type="button" class="tog" data-val="no"  data-en="Not Disabled" data-hi="विकलांग नहीं">Not Disabled</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button type="submit" class="submit-btn" id="submitBtn"
-      data-en="Submit Referral" data-hi="रेफरल जमा करें">Submit Referral</button>
-  </form>
-
-  <div class="err-banner" id="errBanner"></div>
-
-</div>
-<script>
-  const API = 'https://makethon2026.onrender.com';
-  const sel = {};
-  let gps = null;
-  let currentLang = 'en';
-
-  // ── Translation strings ───────────────────────────────────────────────────────
-  const T = {
-    en: {
-      connecting:   'connecting',
-      online:       'online',
-      offline:      'offline',
-      locating:     'Locating…',
-      locCaptured:  'Location captured',
-      locDenied:    'Permission denied',
-      locUnavail:   'Unavailable',
-      locTimeout:   'Timeout',
-      locFailed:    'Failed',
-      locNoSupport: 'Not supported',
-      submitting:   'Submitting…',
-      submitBtn:    'Submit Referral',
-      errRequired:  'Please complete all required fields.',
-      errApi:       'Could not reach API.',
-      pageTitle:    'Patient Referral',
-    },
-    hi: {
-      connecting:   'जोड़ रहे हैं',
-      online:       'ऑनलाइन',
-      offline:      'ऑफलाइन',
-      locating:     'खोज रहे हैं…',
-      locCaptured:  'स्थान मिला',
-      locDenied:    'अनुमति नहीं मिली',
-      locUnavail:   'अनुपलब्ध',
-      locTimeout:   'समय समाप्त',
-      locFailed:    'विफल',
-      locNoSupport: 'समर्थित नहीं',
-      submitting:   'जमा हो रहा है…',
-      submitBtn:    'रेफरल जमा करें',
-      errRequired:  'कृपया सभी आवश्यक फ़ील्ड भरें।',
-      errApi:       'API तक नहीं पहुँचा जा सका।',
-      pageTitle:    'रोगी रेफरल',
-    }
-  };
-
-  // ── Apply language ────────────────────────────────────────────────────────────
-  function setLang(lang) {
-    currentLang = lang;
-    document.getElementById('btnEn').classList.toggle('active', lang === 'en');
-    document.getElementById('btnHi').classList.toggle('active', lang === 'hi');
-
-    // Update all data-en / data-hi elements
-    document.querySelectorAll('[data-en]').forEach(el => {
-      if (el.tagName === 'LABEL') {
-        // Preserve the <span class="req">*</span> inside label
-        const req = el.querySelector('.req');
-        el.childNodes[0].textContent = el.dataset[lang] + ' ';
-      } else if (el.tagName === 'OPTION') {
-        el.textContent = el.dataset[lang];
-      } else {
-        el.textContent = el.dataset[lang];
+    // ── Translation strings ───────────────────────────────────────────────────────
+    const T = {
+      en: {
+        connecting: 'connecting',
+        online: 'online',
+        offline: 'offline',
+        locating: 'Locating…',
+        locCaptured: 'Location captured',
+        locDenied: 'Permission denied',
+        locUnavail: 'Unavailable',
+        locTimeout: 'Timeout',
+        locFailed: 'Failed',
+        locNoSupport: 'Not supported',
+        submitting: 'Submitting…',
+        submitBtn: 'Submit Referral',
+        errRequired: 'Please complete all required fields.',
+        errApi: 'Could not reach API.',
+        pageTitle: 'Patient Referral',
+      },
+      hi: {
+        connecting: 'जोड़ रहे हैं',
+        online: 'ऑनलाइन',
+        offline: 'ऑफलाइन',
+        locating: 'खोज रहे हैं…',
+        locCaptured: 'स्थान मिला',
+        locDenied: 'अनुमति नहीं मिली',
+        locUnavail: 'अनुपलब्ध',
+        locTimeout: 'समय समाप्त',
+        locFailed: 'विफल',
+        locNoSupport: 'समर्थित नहीं',
+        submitting: 'जमा हो रहा है…',
+        submitBtn: 'रेफरल जमा करें',
+        errRequired: 'कृपया सभी आवश्यक फ़ील्ड भरें।',
+        errApi: 'API तक नहीं पहुँचा जा सका।',
+        pageTitle: 'रोगी रेफरल',
       }
-    });
+    };
 
-    // Update placeholders
-    document.querySelectorAll('[data-ph-en]').forEach(el => {
-      el.placeholder = lang === 'en' ? el.dataset.phEn : el.dataset.phHi;
-    });
+    // ── Apply language ────────────────────────────────────────────────────────────
+    function setLang(lang) {
+      currentLang = lang;
+      document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+      document.getElementById('btnHi').classList.toggle('active', lang === 'hi');
 
-    // Page title
-    document.title = T[lang].pageTitle + ' — Jeevan-Setu';
-
-    // API status pill text
-    const pill   = document.getElementById('apiStatus');
-    const apiTxt = document.getElementById('apiTxt');
-    if      (pill.classList.contains('on'))  apiTxt.textContent = T[lang].online;
-    else if (pill.classList.contains('off')) apiTxt.textContent = T[lang].offline;
-    else                                     apiTxt.textContent = T[lang].connecting;
-
-    // Geo button text (only if not mid-locating)
-    const geoTxt = document.getElementById('geoTxt');
-    if (gps) {
-      geoTxt.textContent = T[lang].locCaptured;
-    } else if (!geoTxt.textContent.includes('…')) {
-      geoTxt.textContent = geoTxt.dataset[lang];
-    }
-
-    // Submit button (if not mid-submit)
-    const submitBtn = document.getElementById('submitBtn');
-    if (!submitBtn.disabled) submitBtn.textContent = T[lang].submitBtn;
-  }
-
-  // ── API health ping ───────────────────────────────────────────────────────────
-  async function ping() {
-    const pill = document.getElementById('apiStatus');
-    const txt  = document.getElementById('apiTxt');
-    try {
-      const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(3000) });
-      if (r.ok) { pill.className = 'on';  txt.textContent = T[currentLang].online; }
-      else throw 0;
-    } catch { pill.className = 'off'; txt.textContent = T[currentLang].offline; }
-  }
-  ping(); setInterval(ping, 20000);
-
-  // ── Toggle chips ──────────────────────────────────────────────────────────────
-  document.querySelectorAll('.toggles').forEach(grp => {
-    grp.querySelectorAll('.tog').forEach(btn => {
-      btn.onclick = () => {
-        grp.querySelectorAll('.tog').forEach(b => b.classList.remove('sel'));
-        btn.classList.add('sel');
-        sel[grp.id] = btn.dataset.val;
-        updateProgress();
-      };
-    });
-  });
-
-  // ── Other disease field ───────────────────────────────────────────────────────
-  document.getElementById('disease').onchange = function () {
-    document.getElementById('otherField').style.display = this.value === 'other' ? 'block' : 'none';
-    updateProgress();
-  };
-
-  // ── Progress bar ──────────────────────────────────────────────────────────────
-  const RF = ['name','age','hospital','disease'];
-  const RG = ['genderGroup','bplGroup','disabledGroup'];
-  function updateProgress() {
-    let n = 0;
-    RF.forEach(id => { if (document.getElementById(id)?.value.trim()) n++; });
-    RG.forEach(id => { if (sel[id]) n++; });
-    document.getElementById('prog').style.width = (n / (RF.length + RG.length) * 100) + '%';
-  }
-  RF.forEach(id => document.getElementById(id)?.addEventListener('input', updateProgress));
-
-  // ── Geolocation ───────────────────────────────────────────────────────────────
-  function getGeo() {
-    const btn  = document.getElementById('geoBtn');
-    const icon = document.getElementById('geoIcon');
-    const txt  = document.getElementById('geoTxt');
-    if (!navigator.geolocation) { txt.textContent = T[currentLang].locNoSupport; return; }
-    btn.className    = 'geo-btn';
-    icon.textContent = '…';
-    txt.textContent  = T[currentLang].locating;
-    navigator.geolocation.getCurrentPosition(
-      p => {
-        gps = { lat: p.coords.latitude, lng: p.coords.longitude };
-        btn.className    = 'geo-btn ok';
-        icon.textContent = '✓';
-        txt.textContent  = T[currentLang].locCaptured;
-        const box = document.getElementById('geoResult');
-        box.textContent = `${gps.lat.toFixed(5)}, ${gps.lng.toFixed(5)}`;
-        box.classList.add('show');
-      },
-      e => {
-        btn.className    = 'geo-btn fail';
-        icon.textContent = '✕';
-        const msgs = ['', T[currentLang].locDenied, T[currentLang].locUnavail, T[currentLang].locTimeout];
-        txt.textContent = msgs[e.code] || T[currentLang].locFailed;
-      },
-      { timeout: 10000, enableHighAccuracy: true }
-    );
-  }
-
-  // ── Submit ────────────────────────────────────────────────────────────────────
-  document.getElementById('form').onsubmit = async function (e) {
-    e.preventDefault();
-    hideErr();
-
-    const name     = document.getElementById('name').value.trim();
-    const age      = parseInt(document.getElementById('age').value);
-    const hospital = document.getElementById('hospital').value.trim();
-    const disease  = document.getElementById('disease').value;
-
-    if (!name || !age || !hospital || !disease || !sel.genderGroup || !sel.bplGroup || !sel.disabledGroup) {
-      showErr(T[currentLang].errRequired); return;
-    }
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled    = true;
-    btn.textContent = T[currentLang].submitting;
-
-    try {
-      const res = await fetch(`${API}/api/referral`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name, age,
-          gender:       sel.genderGroup,
-          hospital,
-          disease,
-          otherDisease: disease === 'other' ? document.getElementById('otherDisease').value.trim() : null,
-          bplStatus:    sel.bplGroup,
-          disabled:     sel.disabledGroup,
-          location:     gps,
-          address:      document.getElementById('address').value.trim(),
-          timestamp:    new Date().toISOString()
-        })
+      // Update all data-en / data-hi elements
+      document.querySelectorAll('[data-en]').forEach(el => {
+        if (el.tagName === 'LABEL') {
+          // Preserve the <span class="req">*</span> inside label
+          const req = el.querySelector('.req');
+          el.childNodes[0].textContent = el.dataset[lang] + ' ';
+        } else if (el.tagName === 'OPTION') {
+          el.textContent = el.dataset[lang];
+        } else {
+          el.textContent = el.dataset[lang];
+        }
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        const msg = Array.isArray(data.detail) ? data.detail[0] : (data.detail || 'Error');
-        throw new Error(msg);
+      // Update placeholders
+      document.querySelectorAll('[data-ph-en]').forEach(el => {
+        el.placeholder = lang === 'en' ? el.dataset.phEn : el.dataset.phHi;
+      });
+
+      // Page title
+      document.title = T[lang].pageTitle + ' — Jeevan-Setu';
+
+      // API status pill text
+      const pill = document.getElementById('apiStatus');
+      const apiTxt = document.getElementById('apiTxt');
+      if (pill.classList.contains('on')) apiTxt.textContent = T[lang].online;
+      else if (pill.classList.contains('off')) apiTxt.textContent = T[lang].offline;
+      else apiTxt.textContent = T[lang].connecting;
+
+      // Geo button text (only if not mid-locating)
+      const geoTxt = document.getElementById('geoTxt');
+      if (gps) {
+        geoTxt.textContent = T[lang].locCaptured;
+      } else if (!geoTxt.textContent.includes('…')) {
+        geoTxt.textContent = geoTxt.dataset[lang];
       }
 
-      sessionStorage.setItem('referralResult', JSON.stringify(data));
-      window.location.href = 'result.html';
-
-    } catch (err) {
-      showErr(err.message || T[currentLang].errApi);
-    } finally {
-      btn.disabled    = false;
-      btn.textContent = T[currentLang].submitBtn;
+      // Submit button (if not mid-submit)
+      const submitBtn = document.getElementById('submitBtn');
+      if (!submitBtn.disabled) submitBtn.textContent = T[lang].submitBtn;
     }
-  };
 
-  function showErr(msg) {
-    const b = document.getElementById('errBanner');
-    b.textContent = '✕ ' + msg;
-    b.className = 'err-banner show';
-    b.scrollIntoView({ behavior: 'smooth' });
-  }
+    // ── API health ping ───────────────────────────────────────────────────────────
+    async function ping() {
+      const pill = document.getElementById('apiStatus');
+      const txt = document.getElementById('apiTxt');
+      try {
+        const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(3000) });
+        if (r.ok) { pill.className = 'on'; txt.textContent = T[currentLang].online; }
+        else throw 0;
+      } catch { pill.className = 'off'; txt.textContent = T[currentLang].offline; }
+    }
+    ping(); setInterval(ping, 20000);
 
-  function hideErr() {
-    document.getElementById('errBanner').className = 'err-banner';
-  }
-</script>
+    // ── Toggle chips ──────────────────────────────────────────────────────────────
+    document.querySelectorAll('.toggles').forEach(grp => {
+      grp.querySelectorAll('.tog').forEach(btn => {
+        btn.onclick = () => {
+          grp.querySelectorAll('.tog').forEach(b => b.classList.remove('sel'));
+          btn.classList.add('sel');
+          sel[grp.id] = btn.dataset.val;
+          updateProgress();
+        };
+      });
+    });
+
+    // ── Other disease field ───────────────────────────────────────────────────────
+    document.getElementById('disease').onchange = function () {
+      document.getElementById('otherField').style.display = this.value === 'other' ? 'block' : 'none';
+      updateProgress();
+    };
+
+    // ── Progress bar ──────────────────────────────────────────────────────────────
+    const RF = ['name', 'age', 'hospital', 'disease'];
+    const RG = ['genderGroup', 'bplGroup', 'disabledGroup'];
+    function updateProgress() {
+      let n = 0;
+      RF.forEach(id => { if (document.getElementById(id)?.value.trim()) n++; });
+      RG.forEach(id => { if (sel[id]) n++; });
+      document.getElementById('prog').style.width = (n / (RF.length + RG.length) * 100) + '%';
+    }
+    RF.forEach(id => document.getElementById(id)?.addEventListener('input', updateProgress));
+
+    // ── Geolocation ───────────────────────────────────────────────────────────────
+    function getGeo() {
+      const btn = document.getElementById('geoBtn');
+      const icon = document.getElementById('geoIcon');
+      const txt = document.getElementById('geoTxt');
+      if (!navigator.geolocation) { txt.textContent = T[currentLang].locNoSupport; return; }
+      btn.className = 'geo-btn';
+      icon.textContent = '…';
+      txt.textContent = T[currentLang].locating;
+      navigator.geolocation.getCurrentPosition(
+        p => {
+          gps = { lat: p.coords.latitude, lng: p.coords.longitude };
+          btn.className = 'geo-btn ok';
+          icon.textContent = '✓';
+          txt.textContent = T[currentLang].locCaptured;
+          const box = document.getElementById('geoResult');
+          box.textContent = `${gps.lat.toFixed(5)}, ${gps.lng.toFixed(5)}`;
+          box.classList.add('show');
+        },
+        e => {
+          btn.className = 'geo-btn fail';
+          icon.textContent = '✕';
+          const msgs = ['', T[currentLang].locDenied, T[currentLang].locUnavail, T[currentLang].locTimeout];
+          txt.textContent = msgs[e.code] || T[currentLang].locFailed;
+        },
+        { timeout: 10000, enableHighAccuracy: true }
+      );
+    }
+
+    // ── Submit ────────────────────────────────────────────────────────────────────
+    document.getElementById('form').onsubmit = async function (e) {
+      e.preventDefault();
+      hideErr();
+
+      const name = document.getElementById('name').value.trim();
+      const age = parseInt(document.getElementById('age').value);
+      const hospital = document.getElementById('hospital').value.trim();
+      const disease = document.getElementById('disease').value;
+
+      if (!name || !age || !hospital || !disease || !sel.genderGroup || !sel.bplGroup || !sel.disabledGroup) {
+        showErr(T[currentLang].errRequired); return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = T[currentLang].submitting;
+
+      try {
+        const res = await fetch(`${API}/api/referral`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name, age,
+            gender: sel.genderGroup,
+            hospital,
+            disease,
+            otherDisease: disease === 'other' ? document.getElementById('otherDisease').value.trim() : null,
+            bplStatus: sel.bplGroup,
+            disabled: sel.disabledGroup,
+            location: gps,
+            address: document.getElementById('address').value.trim(),
+            timestamp: new Date().toISOString()
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          const msg = Array.isArray(data.detail) ? data.detail[0] : (data.detail || 'Error');
+          throw new Error(msg);
+        }
+
+        sessionStorage.setItem('referralResult', JSON.stringify(data));
+        window.location.href = 'result.html';
+
+      } catch (err) {
+        showErr(err.message || T[currentLang].errApi);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = T[currentLang].submitBtn;
+      }
+    };
+
+    function showErr(msg) {
+      const b = document.getElementById('errBanner');
+      b.textContent = '✕ ' + msg;
+      b.className = 'err-banner show';
+      b.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function hideErr() {
+      document.getElementById('errBanner').className = 'err-banner';
+    }
+  </script>
 </body>
+
 </html>
