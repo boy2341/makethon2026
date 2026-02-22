@@ -7,24 +7,28 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { v4 as uuidv4 } from "uuid";
 
-// ─── Setup ────────────────────────────────────────────────────────────────────
+// get current folder path (needed in ES modules)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// load .env file so we can use process.env
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+// stop the server if no API key found
 if (!GEMINI_API_KEY) {
     console.error("❌ GEMINI_API_KEY not found in .env");
     process.exit(1);
 }
 
-// ─── Clients ──────────────────────────────────────────────────────────────────
+// setup Gemini AI and Express
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ─── Load Hospital Data ───────────────────────────────────────────────────────
+// load hospital data from JSON file
 let hospitals = [];
 try {
     const raw = fs.readFileSync(path.join(__dirname, "hospital.json"), "utf-8");
@@ -35,10 +39,10 @@ try {
     process.exit(1);
 }
 
-// ─── In-memory referral store (replace with DB in production) ─────────────────
+// store referrals in memory (use a database in production)
 const referrals = new Map();
 
-// ─── Utility: Haversine Distance (km) ─────────────────────────────────────────
+// calculate distance between two GPS points in km
 function haversine(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -51,8 +55,7 @@ function haversine(lat1, lon1, lat2, lon2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-//Utility: Find Best Hospitals
-// Score = 0.5 * ratingScore + 0.3 * specialisationMatch + 0.2 * distanceScore
+// find top hospitals based on rating, specialisation match, and distance
 function findBestHospitals(lat, lon, condition, topN = 5) {
     const conditionLower = condition.toLowerCase();
 
@@ -64,26 +67,31 @@ function findBestHospitals(lat, lon, condition, topN = 5) {
             .split(",")
             .map((s) => s.trim());
 
+        // 1 if hospital matches the condition, 0 if not
         const specialisationMatch = specialisations.some((s) =>
             conditionLower.includes(s) || s.includes(conditionLower)
         ) ? 1 : 0;
 
         const ratingScore = (h.Rating || 0) / 5;
         const distanceScore = dist !== null ? Math.max(0, 1 - dist / 500) : 0.5;
+
+        // final score: 50% rating + 30% specialisation + 20% distance
         const score = 0.5 * ratingScore + 0.3 * specialisationMatch + 0.2 * distanceScore;
 
         return { ...h, _distance: dist, _score: score };
     });
 
+    // sort by score and return top N
     scored.sort((a, b) => b._score - a._score);
     return scored.slice(0, topN);
 }
 
-//Utility: Determine Priority
+// conditions that need urgent/high priority care
 const HIGH_PRIORITY_CONDITIONS = [
     "cardiology", "neurology", "oncology", "pulmonology", "nephrology"
 ];
 
+// decide if patient needs high, medium, or normal priority
 function getPriority(condition) {
     const c = condition.toLowerCase();
     if (HIGH_PRIORITY_CONDITIONS.some((hp) => c.includes(hp))) return "HIGH";
@@ -92,7 +100,7 @@ function getPriority(condition) {
     return "NORMAL";
 }
 
-//Utility: Eligible Scheme
+// find which insurance schemes the patient can use
 function getEligibleSchemes(hospitals, bplStatus, disabled, age) {
     const allSchemes = new Set();
     hospitals.forEach((h) => {
@@ -111,13 +119,13 @@ function getEligibleSchemes(hospitals, bplStatus, disabled, age) {
     return [...new Set(eligible)].slice(0, 6);
 }
 
-//Utility: Disease label formatter
+// make disease name look nice e.g. "cardiology" → "Cardiology"
 function formatDisease(disease, otherDisease) {
     if (disease === "other") return otherDisease || "Other";
     return disease.charAt(0).toUpperCase() + disease.slice(1);
 }
 
-//AI: Generate Recommendation Explanation
+// ask Gemini AI to explain why these hospitals were recommended
 async function getAIExplanation(patient, topHospitals) {
     const hospitalList = topHospitals
         .map((h, i) =>
@@ -164,7 +172,7 @@ Do NOT use bullet points. Write in clear prose.
     }
 }
 
-
+// fetch real nearby hospitals from OpenStreetMap using GPS
 async function getNearbyFromOSM(lat, lon, radiusKm = 25) {
     const radiusM = radiusKm * 1000;
     const query = `
@@ -195,7 +203,6 @@ async function getNearbyFromOSM(lat, lon, radiusKm = 25) {
                 name: el.tags?.name || "Unnamed Hospital",
                 lat: osmLat,
                 lon: osmLon,
-                // FIX: include distance_km so frontend can display it in the referral response
                 distance_km: (osmLat && osmLon)
                     ? parseFloat(haversine(lat, lon, osmLat, osmLon).toFixed(2))
                     : null,
@@ -215,131 +222,108 @@ async function getNearbyFromOSM(lat, lon, radiusKm = 25) {
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ROUTES
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ─── GET /health ──────────────────────────────────────────────────────────────
-// Frontend polls this every 20s to show the green/red API pill
+// simple health check so frontend knows the server is alive
 app.get("/health", (req, res) => {
     res.json({ status: "ok", hospitals_loaded: hospitals.length });
 });
 
-// ─── POST /api/referral ───────────────────────────────────────────────────────
-// Called by frontend form submit. Returns full referral record.
-// Frontend reads: referral_id, patient_name, disease_label, priority,
-//                 received_at, ai_explanation, recommended_hospitals,
-//                 nearby_osm_hospitals, schemes_eligible
+// main route: takes patient data and returns hospital recommendations
 app.post("/api/referral", async (req, res) => {
     const {
         name, age, gender, hospital, disease, otherDisease,
         bplStatus, disabled, location, address, timestamp,
     } = req.body;
 
-    // ── Validate ─────────────────────────────────────────────────────────────
-    // detail is returned as string[] — frontend reads detail[0] directly
+    // check all required fields are present
     const errors = [];
-    if (!name?.trim())
-        errors.push("name is required");
+    if (!name?.trim()) errors.push("name is required");
     if (!age || typeof age !== "number" || !Number.isInteger(age) || age <= 0 || age > 120)
         errors.push("age must be a whole number between 1 and 120");
-    if (!gender)
-        errors.push("gender is required");
-    if (!hospital?.trim())
-        errors.push("hospital is required");
-    if (!disease)
-        errors.push("disease/condition is required");
+    if (!gender) errors.push("gender is required");
+    if (!hospital?.trim()) errors.push("hospital is required");
+    if (!disease) errors.push("disease/condition is required");
     if (disease === "other" && !otherDisease?.trim())
         errors.push("otherDisease is required when disease is 'other'");
-    if (!bplStatus)
-        errors.push("bplStatus is required");
-    if (!disabled)
-        errors.push("disabled status is required");
+    if (!bplStatus) errors.push("bplStatus is required");
+    if (!disabled) errors.push("disabled status is required");
 
     if (errors.length > 0) {
-        // Return detail as string[] — frontend does: data.detail[0]
         return res.status(422).json({ detail: errors });
     }
 
-    // GPS coords come in as location: { lat, lng } from the frontend
+    // get GPS from request body
     const lat = location?.lat ?? null;
     const lon = location?.lng ?? null;
     const diseaseLabel = formatDisease(disease, otherDisease);
 
-    // ── Find best hospitals from JSON ─────────────────────────────────────────
+    // get top 5 hospitals from our database
     const topHospitals = findBestHospitals(lat, lon, diseaseLabel, 5);
 
-    // ── Fetch nearby real hospitals from OSM (only if GPS was provided) ───────
+    // get real hospitals nearby from OpenStreetMap (only if GPS available)
     let nearbyOSM = [];
     if (lat && lon) {
         nearbyOSM = await getNearbyFromOSM(lat, lon, 30);
     }
 
-    // ── AI explanation via Gemini ─────────────────────────────────────────────
-    const patientContext = {
-        name, age, gender, hospital, diseaseLabel,
-        bplStatus, disabled, lat, lon,
-    };
+    // get AI explanation from Gemini
+    const patientContext = { name, age, gender, hospital, diseaseLabel, bplStatus, disabled, lat, lon };
     const aiExplanation = await getAIExplanation(patientContext, topHospitals);
 
-    // ── Priority & schemes ────────────────────────────────────────────────────
     const priority = getPriority(diseaseLabel);
     const schemesEligible = getEligibleSchemes(topHospitals, bplStatus, disabled, age);
 
-    // ── Build record ──────────────────────────────────────────────────────────
+    // create a unique ID for this referral
     const referralId = "REF-" + uuidv4().slice(0, 8).toUpperCase();
+
     const record = {
-        referral_id: referralId,               // → frontend: d.referral_id
-        patient_name: name,                    // → frontend: d.patient_name
+        referral_id: referralId,
+        patient_name: name,
         age,
         gender,
         current_hospital: hospital,
-        disease_label: diseaseLabel,           // → frontend: d.disease_label
-        priority,                              // → frontend: d.priority  ("HIGH"/"MEDIUM"/"NORMAL")
+        disease_label: diseaseLabel,
+        priority,
         bpl_status: bplStatus,
         disabled,
         location: lat && lon ? { lat, lon } : null,
         address: address || null,
-        received_at: timestamp || new Date().toISOString(),  // → frontend: d.received_at
+        received_at: timestamp || new Date().toISOString(),
 
-        // → frontend: d.recommended_hospitals — array of hospital objects
+        // list of top recommended hospitals
         recommended_hospitals: topHospitals.map((h) => ({
-            id: h.id,                          // → frontend: h.id
-            city: h.City,                      // → frontend: h.city
-            state: h.State,                    // → frontend: h.state
+            id: h.id,
+            city: h.City,
+            state: h.State,
             district: h.District,
-            rating: h.Rating,                  // → frontend: h.rating
+            rating: h.Rating,
             reviews: h["Number of Reviews"],
-            specialisation: h.Specialisation,  // → frontend: h.specialisation
-            beds: h["No of Beds"],             // → frontend: h.beds
+            specialisation: h.Specialisation,
+            beds: h["No of Beds"],
             schemes: h["Insurance Schemes"],
             coordinates: { lat: h.Latitude, lon: h.Longitude },
-            distance_km: h._distance !== null
-                ? parseFloat(h._distance.toFixed(2))
-                : null,                        // → frontend: h.distance_km
+            distance_km: h._distance !== null ? parseFloat(h._distance.toFixed(2)) : null,
             score: parseFloat(h._score.toFixed(3)),
         })),
 
-        // → frontend: d.nearby_osm_hospitals — real-world hospitals from OSM
-        // Each entry has: name, address, phone, emergency, distance_km, lat, lon
+        // real hospitals pulled from OpenStreetMap
         nearby_osm_hospitals: nearbyOSM,
 
-        // → frontend: d.ai_explanation
+        // AI explanation or fallback message if Gemini fails
         ai_explanation:
             aiExplanation ||
             `${topHospitals[0]?.id} in ${topHospitals[0]?.City} is recommended based on its ` +
             `rating of ${topHospitals[0]?.Rating} and specialisation in ${topHospitals[0]?.Specialisation}, ` +
             `making it well-suited for ${diseaseLabel} cases.`,
 
-        // → frontend: d.schemes_eligible — string[]
         schemes_eligible: schemesEligible,
     };
 
+    // save referral and send response
     referrals.set(referralId, record);
     return res.status(200).json(record);
 });
 
-// ─── GET /api/referral/:id ────────────────────────────────────────────────────
+// get a saved referral by its ID
 app.get("/api/referral/:id", (req, res) => {
     const record = referrals.get(req.params.id);
     if (!record) {
@@ -348,7 +332,7 @@ app.get("/api/referral/:id", (req, res) => {
     res.json(record);
 });
 
-// ─── GET /api/hospitals/nearby ────────────────────────────────────────────────
+// find hospitals near a GPS location
 app.get("/api/hospitals/nearby", async (req, res) => {
     const lat = parseFloat(req.query.lat);
     const lon = parseFloat(req.query.lon);
@@ -372,7 +356,6 @@ app.get("/api/hospitals/nearby", async (req, res) => {
         distance_km: h._distance !== null ? parseFloat(h._distance.toFixed(2)) : null,
     }));
 
-    // distance_km is now computed inside getNearbyFromOSM itself
     const fromOSM = (await getNearbyFromOSM(lat, lon, radius)).map((h) => ({
         source: "openstreetmap",
         ...h,
@@ -386,27 +369,30 @@ app.get("/api/hospitals/nearby", async (req, res) => {
     });
 });
 
-// ─── 404 & Error handlers ─────────────────────────────────────────────────────
-// Add this before app.use((req, res) => ...)
+// welcome message at root URL
 app.get("/", (req, res) => {
-    res.json({ 
-        message: "Welcome to Jeevan-Setu API", 
+    res.json({
+        message: "Welcome to Jeevan-Setu API",
         status: "active",
         documentation: "/health"
     });
 });
+
+// handle unknown routes
 app.use((req, res) => res.status(404).json({ detail: "Route not found" }));
+
+// handle unexpected server errors
 app.use((err, req, res, next) => {
     console.error("Unhandled:", err.message);
     res.status(500).json({ detail: "Internal server error" });
 });
 
-// ─── Start ────────────────────────────────────────────────────────────────────
+// start the server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`🚀 Jeevan-Setu API running → http://localhost:${PORT}`);
-    console.log(`   POST /api/referral                            — Submit referral`);
-    console.log(`   GET  /api/referral/:id                        — Fetch by ID`);
-    console.log(`   GET  /api/hospitals/nearby?lat=&lon=&condition= — Nearby hospitals`);
-    console.log(`   GET  /health                                  — Health check`);
+    console.log(`   POST /api/referral`);
+    console.log(`   GET  /api/referral/:id`);
+    console.log(`   GET  /api/hospitals/nearby?lat=&lon=&condition=`);
+    console.log(`   GET  /health`);
 });
