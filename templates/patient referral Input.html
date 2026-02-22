@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Patient Registration</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/patient_referral_input.css" />
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <div class="header-eyebrow">Patient Portal</div>
+        <h1>Register &amp; Find<br /><em>Nearby Hospitals</em></h1>
+      </div>
+
+      <!-- Auto location strip -->
+      <div id="locationStrip" class="loading">
+        <span class="loc-dot"></span>
+        <span id="locText">Detecting your location…</span>
+      </div>
+
+      <form id="registrationForm">
+        <input type="hidden" id="lat" name="latitude" />
+        <input type="hidden" id="lng" name="longitude" />
+
+        <div class="form-fields">
+          <div class="field">
+            <label>Disease</label>
+            <input
+              type="text"
+              id="disease"
+              placeholder="e.g. Fracture"
+              required
+            />
+          </div>
+          <div class="field">
+            <label>Age</label>
+            <input type="number" id="age" placeholder="e.g. 34" required />
+          </div>
+          <div class="field">
+            <label>Gender</label>
+            <select id="gender">
+              <option>Male</option>
+              <option>Female</option>
+              <option>Non-Binary</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Insurance</label>
+            <select id="insurance">
+              <option>Yes</option>
+              <option>No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Photo only (PDF removed) -->
+        <div class="upload-section">
+          <span class="upload-label">Report Photo (optional)</span>
+          <label class="upload-trigger">
+            <span class="upload-icon">📸</span>
+            <span class="upload-text">
+              <strong>Take or Upload Photo</strong>
+              Tap to open camera or choose from gallery
+            </span>
+            <input
+              type="file"
+              id="cameraInput"
+              accept="image/*"
+              capture="environment"
+            />
+          </label>
+          <img id="preview-img" alt="Report preview" />
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn" disabled>
+          Find Hospitals →
+        </button>
+      </form>
+    </div>
+
+    <script>
+      // ── Auto geolocation ────────────────────────────────────────────────────────
+      const strip = document.getElementById("locationStrip");
+      const locText = document.getElementById("locText");
+      const submitBtn = document.getElementById("submitBtn");
+
+      function setLocStatus(type, text) {
+        strip.className = type;
+        locText.textContent = text;
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            document.getElementById("lat").value = pos.coords.latitude;
+            document.getElementById("lng").value = pos.coords.longitude;
+            setLocStatus(
+              "success",
+              `Location detected — ${pos.coords.latitude.toFixed(4)}°N, ${pos.coords.longitude.toFixed(4)}°E`,
+            );
+            submitBtn.disabled = false;
+          },
+          () => {
+            setLocStatus(
+              "error",
+              "Location access denied — please enable GPS and refresh.",
+            );
+            submitBtn.disabled = false; // still allow submit; backend can handle missing coords
+          },
+          { enableHighAccuracy: true, timeout: 10000 },
+        );
+      } else {
+        setLocStatus("error", "Geolocation not supported by your browser.");
+        submitBtn.disabled = false;
+      }
+
+      // ── Camera preview ──────────────────────────────────────────────────────────
+      document
+        .getElementById("cameraInput")
+        .addEventListener("change", function (e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const img = document.getElementById("preview-img");
+            img.src = ev.target.result;
+            img.style.display = "block";
+          };
+          reader.readAsDataURL(file);
+        });
+
+      // ── Form submit ─────────────────────────────────────────────────────────────
+      document
+        .getElementById("registrationForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const lat = document.getElementById("lat").value;
+          const lng = document.getElementById("lng").value;
+          if (!lat || !lng) {
+            alert("Please wait for location detection or enable GPS.");
+            return;
+          }
+          window.location.href = `hospitals.html?lat=${lat}&lng=${lng}`;
+        });
+    </script>
+  </body>
+</html>

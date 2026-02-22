@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jeevan Setu — Recommended Hospitals</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/hospital_results_style.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header>
+      <div class="logo">
+        <div class="logo-icon"></div>
+        <div class="logo-text">Jeevan<span>Setu</span></div>
+      </div>
+      <div class="header-meta">
+        Results based on your location<br />
+        <strong style="color: white" id="headerLocation"
+          >Fetching location…</strong
+        >
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-label">AI-Powered Recommendation</div>
+      <h1>Suggested Hospitals<br />For You</h1>
+      <p class="hero-sub">
+        Ranked by proximity, availability, specialisation, and insurance
+        compatibility — personalised to your needs.
+      </p>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main">
+      <div class="section-head">
+        <h2>Recommended Hospitals</h2>
+        <span class="count" id="visibleCount"></span>
+      </div>
+      <div class="hospital-grid" id="hospitalGrid">
+        <!-- Cards injected by JS -->
+      </div>
+    </div>
+
+    <script src="../script/hospital_script.js"></script>
+  </body>
+</html>
