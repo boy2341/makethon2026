@@ -387,6 +387,14 @@ app.get("/api/hospitals/nearby", async (req, res) => {
 });
 
 // ─── 404 & Error handlers ─────────────────────────────────────────────────────
+// Add this before app.use((req, res) => ...)
+app.get("/", (req, res) => {
+    res.json({ 
+        message: "Welcome to Jeevan-Setu API", 
+        status: "active",
+        documentation: "/health"
+    });
+});
 app.use((req, res) => res.status(404).json({ detail: "Route not found" }));
 app.use((err, req, res, next) => {
     console.error("Unhandled:", err.message);
