@@ -1,43 +1,93 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="../css/general.css" />
-  <link rel="stylesheet" href="../css/style.css" />
-  <link rel="stylesheet" href="../css/queries.css" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <title>Jeevan-Setu — Patient Portal</title>
+  <style>
+    :root {
+      --bg:          #F5F3EE;
+      --white:       #FFFFFF;
+      --ink:         #1A1A2E;
+      --muted:       #7A7D8C;
+      --border:      #DDD9D0;
+      --border-dark: #C8C3B8;
+      --teal:        #0D6E6E;
+      --teal-light:  #E6F4F4;
+      --teal-hover:  #0A5858;
+      --red:         #C0392B;
+      --red-lt:      #FDECEA;
+      --card-shadow: 0 2px 12px rgba(13,110,110,0.07), 0 1px 3px rgba(0,0,0,0.04);
+      --radius:      12px;
+      --sans:        'IBM Plex Sans', system-ui, sans-serif;
+      --mono:        'IBM Plex Mono', 'Courier New', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: var(--sans); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; -webkit-font-smoothing: antialiased; }
 
-  <title>Rural Referral System</title>
+    .wrap { width: 100%; max-width: 440px; }
+
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; margin-bottom: 28px; }
+    .back-link:hover { color: var(--teal); }
+
+    .wordmark { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); background: var(--teal-light); border: 1px solid rgba(13,110,110,0.18); padding: 4px 10px; border-radius: 99px; display: inline-block; margin-bottom: 24px; }
+
+    h1 { font-size: 34px; font-weight: 600; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .sub { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 40px; }
+
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 400px) { .card-grid { grid-template-columns: 1fr; } }
+
+    .nav-card {
+      display: flex; flex-direction: column; align-items: flex-start;
+      gap: 12px; padding: 24px 20px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--card-shadow);
+      text-decoration: none; color: inherit;
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+      animation: fadeUp 0.35s ease both;
+    }
+    .nav-card:nth-child(1) { animation-delay: 0.05s; }
+    .nav-card:nth-child(2) { animation-delay: 0.10s; }
+    .nav-card.emergency { border-color: rgba(192,57,43,0.2); }
+    .nav-card:hover { border-color: rgba(13,110,110,0.3); box-shadow: 0 6px 24px rgba(13,110,110,0.12); transform: translateY(-2px); }
+    .nav-card.emergency:hover { border-color: rgba(192,57,43,0.4); box-shadow: 0 6px 24px rgba(192,57,43,0.1); }
+
+    .nav-icon { font-size: 28px; line-height: 1; }
+    .nav-label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .nav-label.urgent { color: var(--red); }
+    .nav-title { font-size: 17px; font-weight: 600; color: var(--ink); }
+    .nav-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .nav-arrow { margin-top: auto; font-size: 18px; color: var(--teal); }
+    .nav-arrow.urgent { color: var(--red); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
 </head>
-
 <body>
-  <header class="header">
-    <h1 class="heading-primary">Jeevan Setu</h1>
-  </header>
-  <main class="container">
-    <div class="grid grid--2-cols grid--center">
-      <div>
-        <button class="btn">
-          <p class="btn-text">
-            <a href="emergency_result.html" class="link">Emergency</a>
-          </p>
-        </button>
-      </div>
-      <div>
-        <button class="btn">
-          <p class="btn-text">
-            <a href="../index.html" class="link">Referral</a>
-          </p>
-        </button>
-      </div>
-    </div>
-  </main>
-</body>
-<script src="../script/script.js"></script>
+  <div class="wrap">
+    <a href="login_primary.html" class="back-link">← Back</a>
+    <span class="wordmark">Patient Portal</span>
+    <h1>How can we<br>help you?</h1>
+    <p class="sub">Choose your service type below.</p>
 
+    <div class="card-grid">
+      <a href="emergency_result.html" class="nav-card emergency">
+        <div class="nav-icon">🚨</div>
+        <div class="nav-label urgent">Urgent</div>
+        <div class="nav-title">Emergency</div>
+        <div class="nav-desc">Find the nearest hospitals immediately using your location.</div>
+        <div class="nav-arrow urgent">→</div>
+      </a>
+      <a href="../index.html" class="nav-card">
+        <div class="nav-icon">📋</div>
+        <div class="nav-label">Standard</div>
+        <div class="nav-title">Referral</div>
+        <div class="nav-desc">Submit patient details for AI-matched hospital recommendations.</div>
+        <div class="nav-arrow">→</div>
+      </a>
+    </div>
+  </div>
+</body>
 </html>
