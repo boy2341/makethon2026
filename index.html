@@ -1,642 +1,410 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Referral</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
-    <style>
-        :root {
-            --bg: #e6efe3;
-            --white: #eeecec;
-            --ink: #111318;
-            --muted: #8a8f9a;
-            --border: #e2e0da;
-            --accent: #1a56db;
-            --accent-pale: #eef3fe;
-            --green: #0d7a4e;
-            --green-pale: #ebfaf3;
-            --red: #c0392b;
-            --red-pale: #fdf0ee;
-            --amber: #b45309;
-            --mono: 'IBM Plex Mono', monospace;
-            --sans: 'IBM Plex Sans', sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: var(--sans);
-            background: var(--bg);
-            color: var(--ink);
-            font-size: 14px;
-            line-height: 1.6;
-            min-height: 100vh;
-            padding: 48px 16px 80px;
-        }
-
-        .wrap {
-            max-width: 560px;
-            margin: 0 auto;
-        }
-
-        /* ── Header ── */
-        .hd {
-            margin-bottom: 36px;
-        }
-
-        .hd-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .wordmark {
-            font-family: var(--mono);
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        #apiStatus {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-family: var(--mono);
-            font-size: 10px;
-            letter-spacing: 0.06em;
-            padding: 3px 9px;
-            border-radius: 100px;
-            border: 1px solid var(--border);
-            color: var(--muted);
-            background: var(--white);
-            transition: all 0.3s;
-        }
-
-        #apiStatus .dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--border);
-            transition: background 0.3s;
-        }
-
-        #apiStatus.on {
-            border-color: #6ee7b7;
-            color: var(--green);
-        }
-
-        #apiStatus.on .dot {
-            background: var(--green);
-        }
-
-        #apiStatus.off {
-            border-color: #fca5a5;
-            color: var(--red);
-        }
-
-        #apiStatus.off .dot {
-            background: var(--red);
-        }
-
-        h1 {
-            font-size: 26px;
-            font-weight: 600;
-            letter-spacing: -0.025em;
-            line-height: 1.2;
-            margin-bottom: 4px;
-        }
-
-        .sub {
-            font-size: 13px;
-            color: var(--muted);
-        }
-
-        /* ── Progress ── */
-        .prog-track {
-            height: 2px;
-            background: var(--border);
-            margin-bottom: 24px;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .prog-fill {
-            height: 100%;
-            background: var(--accent);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        /* ── Card ── */
-        .card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
-
-        .card-head {
-            padding: 14px 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-head-label {
-            font-family: var(--mono);
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .card-body {
-            padding: 20px;
-            display: grid;
-            gap: 14px;
-        }
-
-        .row-2 {
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        @media (max-width: 420px) {
-            .row-2 {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* ── Field ── */
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        label {
-            font-family: var(--mono);
-            font-size: 10px;
-            font-weight: 500;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        label .req {
-            color: var(--accent);
-            margin-left: 1px;
-        }
-
-        input,
-        select {
-            font-family: var(--sans);
-            font-size: 14px;
-            color: var(--ink);
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 9px 12px;
-            outline: none;
-            width: 100%;
-            appearance: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
-        }
-
-        input:focus,
-        select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.07);
-            background: var(--white);
-        }
-
-        input::placeholder {
-            color: #c5c2bb;
-        }
-
-        select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8f9a'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 32px;
-            cursor: pointer;
-        }
-
-        .label {
-            color: #111
-        }
-
-        select option {
-            background: #fff;
-        }
-
-        /* ── Toggle chips ── */
-        .toggles {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .tog {
-            flex: 1;
-            min-width: 64px;
-            padding: 8px 10px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--bg);
-            font-family: var(--sans);
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--muted);
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.15s;
-        }
-
-        .tog:hover {
-            border-color: var(--accent);
-            color: var(--ink);
-        }
-
-        .tog.sel {
-            background: var(--accent-pale);
-            border-color: var(--accent);
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        /* ── Geo ── */
-        .geo-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 9px 12px;
-            font-family: var(--sans);
-            font-size: 13px;
-            color: var(--muted);
-            cursor: pointer;
-            transition: all 0.15s;
-            text-align: left;
-            width: 100%;
-        }
-
-        .geo-btn:hover {
-            border-color: var(--accent);
-            color: var(--ink);
-        }
-
-        .geo-btn.ok {
-            border-color: #6ee7b7;
-            color: var(--green);
-            background: var(--green-pale);
-        }
-
-        .geo-btn.fail {
-            border-color: #fca5a5;
-            color: var(--red);
-        }
-
-        .geo-coords {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--green);
-            padding: 6px 10px;
-            background: var(--green-pale);
-            border-radius: 6px;
-            display: none;
-        }
-
-        .geo-coords.show {
-            display: block;
-        }
-
-        /* ── Submit ── */
-        .submit-btn {
-            width: 100%;
-            margin-top: 6px;
-            padding: 13px;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-family: var(--sans);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s, transform 0.1s;
-        }
-
-        .submit-btn:hover:not(:disabled) {
-            background: #1447c0;
-        }
-
-        .submit-btn:active {
-            transform: scale(0.99);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* ── Error banner ── */
-        .err-banner {
-            display: none;
-            margin-top: 10px;
-            padding: 12px 16px;
-            background: var(--red-pale);
-            border: 1px solid #fca5a5;
-            border-radius: 10px;
-            color: var(--red);
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .err-banner.show {
-            display: block;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Referral — Jeevan-Setu</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .lang-toggle {
+    display: flex; align-items: center;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 100px; padding: 3px; gap: 2px;
+  }
+  .lang-btn {
+    padding: 3px 10px; border: none; border-radius: 100px;
+    background: transparent; font-family: var(--mono);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+    color: var(--muted); cursor: pointer; transition: all 0.2s;
+  }
+  .lang-btn.active {
+    background: var(--white); color: var(--ink);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+</style>
 </head>
-
 <body>
-    <div class="wrap">
+<div class="wrap">
 
-        <!-- Header -->
-        <div class="hd">
-            <div class="hd-top">
-                <span class="wordmark">Jeevan-Setu</span>
-                <div id="apiStatus"><span class="dot"></span><span id="apiTxt">connecting</span></div>
-            </div>
-            <h1>Patient Referral</h1>
-            <p class="sub">Submit details to receive AI-matched hospital recommendations.</p>
+  <!-- Header -->
+  <div class="hd">
+    <div class="hd-top">
+      <span class="wordmark">Jeevan-Setu</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="lang-toggle">
+          <button class="lang-btn active" id="btnEn" onclick="setLang('en')">EN</button>
+          <button class="lang-btn"        id="btnHi" onclick="setLang('hi')">हि</button>
         </div>
-
-        <div class="prog-track">
-            <div class="prog-fill" id="prog"></div>
-        </div>
-
-        <form id="form" novalidate>
-
-            <!-- Personal -->
-            <div class="card">
-                <div class="card-head"><span></span><span class="card-head-label">Personal</span></div>
-                <div class="card-body">
-                    <div class="field">
-                        <label class="label">Full Name <span class="req">*</span></label>
-                        <input type="text" id="name" placeholder="Patient full name" autocomplete="off">
-                    </div>
-                    <div class="row-2">
-                        <div class="field">
-                            <label class="label">Age <span class="req">*</span></label>
-                            <input type="number" id="age" placeholder="Years" min="1" max="120">
-                        </div>
-                        <div class="field">
-                            <label class="label">Current Hospital <span class="req">*</span></label>
-                            <input type="text" id="hospital" placeholder="Hospital name">
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label class="label">Gender <span class="req">*</span></label>
-                        <div class="toggles" id="genderGroup">
-                            <button type="button" class="tog" data-val="male">Male</button>
-                            <button type="button" class="tog" data-val="female">Female</button>
-                            <button type="button" class="tog" data-val="other">Other</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Medical -->
-            <div class="card">
-                <div class="card-head"><span>🩺</span><span class="card-head-label">Medical</span></div>
-                <div class="card-body">
-                    <div class="field">
-                        <label class="label">Referral Condition <span class="req">*</span></label>
-                        <select id="disease">
-                            <option value="">Select condition…</option>
-                            <option value="cardiology">Cardiology</option>
-                            <option value="neurology">Neurology</option>
-                            <option value="oncology">Oncology</option>
-                            <option value="orthopedics">Orthopedics</option>
-                            <option value="gastroenterology">Gastroenterology</option>
-                            <option value="pulmonology">Pulmonology</option>
-                            <option value="nephrology">Nephrology</option>
-                            <option value="endocrinology">Endocrinology</option>
-                            <option value="psychiatry">Psychiatry</option>
-                            <option value="pediatrics">Pediatrics</option>
-                            <option value="gynecology">Gynecology</option>
-                            <option value="dermatology">Dermatology</option>
-                            <option value="ophthalmology">Ophthalmology</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-                    <div class="field" id="otherField" style="display:none;">
-                        <label>Specify Condition <span class="req">*</span></label>
-                        <input type="text" id="otherDisease" placeholder="Describe the condition…">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Location -->
-            <div class="card">
-                <div class="card-head"><span></span><span class="card-head-label">Location</span></div>
-                <div class="card-body">
-                    <div class="field">
-                        <label class="label">GPS</label>
-                        <button type="button" class="geo-btn" id="geoBtn" onclick="getGeo()">
-                            <span id="geoIcon">◎</span>
-                            <span id="geoTxt">Detect my location</span>
-                        </button>
-                        <div class="geo-coords" id="geoResult"></div>
-                    </div>
-                    <div class="field">
-                        <label class="label">Address (optional)</label>
-                        <input type="text" id="address" placeholder="Area or address">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Status -->
-            <div class="card">
-                <div class="card-head"><span>📋</span><span class="card-head-label">Status</span></div>
-                <div class="card-body">
-                    <div class="row-2">
-                        <div class="field">
-                            <label>Income Level <span class="req">*</span></label>
-                            <div class="toggles" id="bplGroup">
-                                <button type="button" class="tog" data-val="below">Below BPL</button>
-                                <button type="button" class="tog" data-val="above">Above BPL</button>
-                            </div>
-                        </div>
-                        <div class="field">
-                            <label class="label">Disability <span class="req">*</span></label>
-                            <div class="toggles" id="disabledGroup">
-                                <button type="button" class="tog" data-val="yes">Disabled</button>
-                                <button type="button" class="tog" data-val="no">Not Disabled</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn" id="submitBtn">Submit Referral</button>
-        </form>
-
-        <div class="err-banner" id="errBanner"></div>
-
+        <div id="apiStatus"><span class="dot"></span><span id="apiTxt">connecting</span></div>
+      </div>
     </div>
-    <script>
-        const API = 'http://localhost:8000';
-        const sel = {};
-        let gps = null;
+    <h1 data-en="Patient Referral" data-hi="रोगी रेफरल">Patient Referral</h1>
+    <p class="sub" data-en="Submit details to receive AI-matched hospital recommendations." data-hi="AI-मिलान अस्पताल सिफारिशें प्राप्त करने के लिए विवरण दर्ज करें।">
+      Submit details to receive AI-matched hospital recommendations.
+    </p>
+  </div>
 
-        // API health ping
-        async function ping() {
-            const pill = document.getElementById('apiStatus');
-            const txt = document.getElementById('apiTxt');
-            try {
-                const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(3000) });
-                if (r.ok) { pill.className = 'on'; txt.textContent = 'online'; }
-                else throw 0;
-            } catch { pill.className = 'off'; txt.textContent = 'offline'; }
-        }
-        ping(); setInterval(ping, 20000);
+  <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
 
-        // Toggle buttons
-        document.querySelectorAll('.toggles').forEach(grp => {
-            grp.querySelectorAll('.tog').forEach(btn => {
-                btn.onclick = () => {
-                    grp.querySelectorAll('.tog').forEach(b => b.classList.remove('sel'));
-                    btn.classList.add('sel');
-                    sel[grp.id] = btn.dataset.val;
-                    updateProgress();
-                };
-            });
-        });
+  <form id="form" novalidate>
 
-        // Other disease field
-        document.getElementById('disease').onchange = function () {
-            document.getElementById('otherField').style.display = this.value === 'other' ? 'block' : 'none';
-            updateProgress();
-        };
+    <!-- Personal -->
+    <div class="card">
+      <div class="card-head">
+        <span>👤</span>
+        <span class="card-head-label" data-en="Personal" data-hi="व्यक्तिगत">Personal</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label data-en="Full Name" data-hi="पूरा नाम">Full Name <span class="req">*</span></label>
+          <input type="text" id="name"
+            data-ph-en="Patient full name" data-ph-hi="रोगी का पूरा नाम"
+            placeholder="Patient full name" autocomplete="off">
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label data-en="Age" data-hi="आयु">Age <span class="req">*</span></label>
+            <input type="number" id="age"
+              data-ph-en="Years" data-ph-hi="वर्ष"
+              placeholder="Years" min="1" max="120">
+          </div>
+          <div class="field">
+            <label data-en="Current Hospital" data-hi="वर्तमान अस्पताल">Current Hospital <span class="req">*</span></label>
+            <input type="text" id="hospital"
+              data-ph-en="Hospital name" data-ph-hi="अस्पताल का नाम"
+              placeholder="Hospital name">
+          </div>
+        </div>
+        <div class="field">
+          <label data-en="Gender" data-hi="लिंग">Gender <span class="req">*</span></label>
+          <div class="toggles" id="genderGroup">
+            <button type="button" class="tog" data-val="male"   data-en="Male"   data-hi="पुरुष">Male</button>
+            <button type="button" class="tog" data-val="female" data-en="Female" data-hi="महिला">Female</button>
+            <button type="button" class="tog" data-val="other"  data-en="Other"  data-hi="अन्य">Other</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        // Progress
-        const RF = ['name', 'age', 'hospital', 'disease'];
-        const RG = ['genderGroup', 'bplGroup', 'disabledGroup'];
-        function updateProgress() {
-            let n = 0;
-            RF.forEach(id => { if (document.getElementById(id)?.value.trim()) n++; });
-            RG.forEach(id => { if (sel[id]) n++; });
-            document.getElementById('prog').style.width = (n / (RF.length + RG.length) * 100) + '%';
-        }
-        RF.forEach(id => document.getElementById(id)?.addEventListener('input', updateProgress));
+    <!-- Medical -->
+    <div class="card">
+      <div class="card-head">
+        <span>🩺</span>
+        <span class="card-head-label" data-en="Medical" data-hi="चिकित्सा">Medical</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label data-en="Referral Condition" data-hi="रेफरल स्थिति">Referral Condition <span class="req">*</span></label>
+          <select id="disease">
+            <option value=""                data-en="Select condition…"      data-hi="स्थिति चुनें…">Select condition…</option>
+            <option value="cardiology"      data-en="Cardiology"             data-hi="हृदय रोग">Cardiology</option>
+            <option value="neurology"       data-en="Neurology"              data-hi="तंत्रिका विज्ञान">Neurology</option>
+            <option value="oncology"        data-en="Oncology"               data-hi="कैंसर विज्ञान">Oncology</option>
+            <option value="orthopedics"     data-en="Orthopedics"            data-hi="हड्डी रोग">Orthopedics</option>
+            <option value="gastroenterology" data-en="Gastroenterology"      data-hi="पाचन रोग">Gastroenterology</option>
+            <option value="pulmonology"     data-en="Pulmonology"            data-hi="फेफड़े रोग">Pulmonology</option>
+            <option value="nephrology"      data-en="Nephrology"             data-hi="गुर्दा रोग">Nephrology</option>
+            <option value="endocrinology"   data-en="Endocrinology"          data-hi="अंतःस्राव विज्ञान">Endocrinology</option>
+            <option value="psychiatry"      data-en="Psychiatry"             data-hi="मनोचिकित्सा">Psychiatry</option>
+            <option value="pediatrics"      data-en="Pediatrics"             data-hi="बाल रोग">Pediatrics</option>
+            <option value="gynecology"      data-en="Gynecology"             data-hi="स्त्री रोग">Gynecology</option>
+            <option value="dermatology"     data-en="Dermatology"            data-hi="त्वचा रोग">Dermatology</option>
+            <option value="ophthalmology"   data-en="Ophthalmology"          data-hi="नेत्र रोग">Ophthalmology</option>
+            <option value="other"           data-en="Other"                  data-hi="अन्य">Other</option>
+          </select>
+        </div>
+        <div class="field" id="otherField" style="display:none;">
+          <label data-en="Specify Condition" data-hi="स्थिति बताएं">Specify Condition <span class="req">*</span></label>
+          <input type="text" id="otherDisease"
+            data-ph-en="Describe the condition…" data-ph-hi="स्थिति का वर्णन करें…"
+            placeholder="Describe the condition…">
+        </div>
+      </div>
+    </div>
 
-        // Geolocation
-        function getGeo() {
-            const btn = document.getElementById('geoBtn');
-            const icon = document.getElementById('geoIcon');
-            const txt = document.getElementById('geoTxt');
-            if (!navigator.geolocation) { txt.textContent = 'Not supported'; return; }
-            btn.className = 'geo-btn'; icon.textContent = '…'; txt.textContent = 'Locating…';
-            navigator.geolocation.getCurrentPosition(
-                p => {
-                    gps = { lat: p.coords.latitude, lng: p.coords.longitude };
-                    btn.className = 'geo-btn ok';
-                    icon.textContent = '✓'; txt.textContent = 'Location captured';
-                    const box = document.getElementById('geoResult');
-                    box.textContent = `${gps.lat.toFixed(5)}, ${gps.lng.toFixed(5)}`;
-                    box.classList.add('show');
-                },
-                e => {
-                    btn.className = 'geo-btn fail'; icon.textContent = '✕';
-                    txt.textContent = ['', 'Permission denied', 'Unavailable', 'Timeout'][e.code] || 'Failed';
-                },
-                { timeout: 10000, enableHighAccuracy: true }
-            );
-        }
+    <!-- Location -->
+    <div class="card">
+      <div class="card-head">
+        <span>📍</span>
+        <span class="card-head-label" data-en="Location" data-hi="स्थान">Location</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label data-en="GPS" data-hi="GPS">GPS</label>
+          <button type="button" class="geo-btn" id="geoBtn" onclick="getGeo()">
+            <span id="geoIcon">◎</span>
+            <span id="geoTxt" data-en="Detect my location" data-hi="मेरा स्थान पहचानें">Detect my location</span>
+          </button>
+          <div class="geo-coords" id="geoResult"></div>
+        </div>
+        <div class="field">
+          <label data-en="Address (optional)" data-hi="पता (वैकल्पिक)">Address (optional)</label>
+          <input type="text" id="address"
+            data-ph-en="Area or address" data-ph-hi="क्षेत्र या पता"
+            placeholder="Area or address">
+        </div>
+      </div>
+    </div>
 
-        // Submit
-        document.getElementById('form').onsubmit = async function (e) {
-            e.preventDefault();
-            hideErr();
+    <!-- Status -->
+    <div class="card">
+      <div class="card-head">
+        <span>📋</span>
+        <span class="card-head-label" data-en="Status" data-hi="स्थिति">Status</span>
+      </div>
+      <div class="card-body">
+        <div class="row-2">
+          <div class="field">
+            <label data-en="Income Level" data-hi="आय स्तर">Income Level <span class="req">*</span></label>
+            <div class="toggles" id="bplGroup">
+              <button type="button" class="tog" data-val="below" data-en="Below BPL" data-hi="BPL से नीचे">Below BPL</button>
+              <button type="button" class="tog" data-val="above" data-en="Above BPL" data-hi="BPL से ऊपर">Above BPL</button>
+            </div>
+          </div>
+          <div class="field">
+            <label data-en="Disability" data-hi="विकलांगता">Disability <span class="req">*</span></label>
+            <div class="toggles" id="disabledGroup">
+              <button type="button" class="tog" data-val="yes" data-en="Disabled"     data-hi="विकलांग">Disabled</button>
+              <button type="button" class="tog" data-val="no"  data-en="Not Disabled" data-hi="विकलांग नहीं">Not Disabled</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            const name = document.getElementById('name').value.trim();
-            const age = parseInt(document.getElementById('age').value);
-            const hospital = document.getElementById('hospital').value.trim();
-            const disease = document.getElementById('disease').value;
+    <button type="submit" class="submit-btn" id="submitBtn"
+      data-en="Submit Referral" data-hi="रेफरल जमा करें">Submit Referral</button>
+  </form>
 
-            if (!name || !age || !hospital || !disease || !sel.genderGroup || !sel.bplGroup || !sel.disabledGroup) {
-                showErr('Please complete all required fields.'); return;
-            }
+  <div class="err-banner" id="errBanner"></div>
 
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.textContent = 'Submitting…';
+</div>
+<script>
+  const API = 'http://localhost:8000';
+  const sel = {};
+  let gps = null;
+  let currentLang = 'en';
 
-            try {
-                const res = await fetch(`${API}/api/referral`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name,
-                        age,
-                        gender: sel.genderGroup,
-                        hospital,
-                        disease,
-                        otherDisease: disease === 'other' ? document.getElementById('otherDisease').value.trim() : null,
-                        bplStatus: sel.bplGroup,
-                        disabled: sel.disabledGroup,
-                        location: gps,
-                        address: document.getElementById('address').value.trim(),
-                        timestamp: new Date().toISOString()
-                    })
-                });
+  // ── Translation strings ───────────────────────────────────────────────────────
+  const T = {
+    en: {
+      connecting:   'connecting',
+      online:       'online',
+      offline:      'offline',
+      locating:     'Locating…',
+      locCaptured:  'Location captured',
+      locDenied:    'Permission denied',
+      locUnavail:   'Unavailable',
+      locTimeout:   'Timeout',
+      locFailed:    'Failed',
+      locNoSupport: 'Not supported',
+      submitting:   'Submitting…',
+      submitBtn:    'Submit Referral',
+      errRequired:  'Please complete all required fields.',
+      errApi:       'Could not reach API.',
+      pageTitle:    'Patient Referral',
+    },
+    hi: {
+      connecting:   'जोड़ रहे हैं',
+      online:       'ऑनलाइन',
+      offline:      'ऑफलाइन',
+      locating:     'खोज रहे हैं…',
+      locCaptured:  'स्थान मिला',
+      locDenied:    'अनुमति नहीं मिली',
+      locUnavail:   'अनुपलब्ध',
+      locTimeout:   'समय समाप्त',
+      locFailed:    'विफल',
+      locNoSupport: 'समर्थित नहीं',
+      submitting:   'जमा हो रहा है…',
+      submitBtn:    'रेफरल जमा करें',
+      errRequired:  'कृपया सभी आवश्यक फ़ील्ड भरें।',
+      errApi:       'API तक नहीं पहुँचा जा सका।',
+      pageTitle:    'रोगी रेफरल',
+    }
+  };
 
-                const data = await res.json();
+  // ── Apply language ────────────────────────────────────────────────────────────
+  function setLang(lang) {
+    currentLang = lang;
+    document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+    document.getElementById('btnHi').classList.toggle('active', lang === 'hi');
 
-                if (!res.ok) {
-                    const msg = Array.isArray(data.detail) ? data.detail[0] : (data.detail || 'Error');
-                    throw new Error(msg);
-                }
+    // Update all data-en / data-hi elements
+    document.querySelectorAll('[data-en]').forEach(el => {
+      if (el.tagName === 'LABEL') {
+        // Preserve the <span class="req">*</span> inside label
+        const req = el.querySelector('.req');
+        el.childNodes[0].textContent = el.dataset[lang] + ' ';
+      } else if (el.tagName === 'OPTION') {
+        el.textContent = el.dataset[lang];
+      } else {
+        el.textContent = el.dataset[lang];
+      }
+    });
 
-                // Save result to sessionStorage and navigate to result page
-                sessionStorage.setItem('referralResult', JSON.stringify(data));
-                window.location.href = 'result.html';
+    // Update placeholders
+    document.querySelectorAll('[data-ph-en]').forEach(el => {
+      el.placeholder = lang === 'en' ? el.dataset.phEn : el.dataset.phHi;
+    });
 
-            } catch (err) {
-                showErr(err.message || 'Could not reach API.');
-            } finally {
-                btn.disabled = false; btn.textContent = 'Submit Referral';
-            }
-        };
+    // Page title
+    document.title = T[lang].pageTitle + ' — Jeevan-Setu';
 
-        function showErr(msg) {
-            const b = document.getElementById('errBanner');
-            b.textContent = '✕ ' + msg;
-            b.className = 'err-banner show';
-            b.scrollIntoView({ behavior: 'smooth' });
-        }
+    // API status pill text
+    const pill   = document.getElementById('apiStatus');
+    const apiTxt = document.getElementById('apiTxt');
+    if      (pill.classList.contains('on'))  apiTxt.textContent = T[lang].online;
+    else if (pill.classList.contains('off')) apiTxt.textContent = T[lang].offline;
+    else                                     apiTxt.textContent = T[lang].connecting;
 
-        function hideErr() {
-            document.getElementById('errBanner').className = 'err-banner';
-        }
-    </script>
+    // Geo button text (only if not mid-locating)
+    const geoTxt = document.getElementById('geoTxt');
+    if (gps) {
+      geoTxt.textContent = T[lang].locCaptured;
+    } else if (!geoTxt.textContent.includes('…')) {
+      geoTxt.textContent = geoTxt.dataset[lang];
+    }
+
+    // Submit button (if not mid-submit)
+    const submitBtn = document.getElementById('submitBtn');
+    if (!submitBtn.disabled) submitBtn.textContent = T[lang].submitBtn;
+  }
+
+  // ── API health ping ───────────────────────────────────────────────────────────
+  async function ping() {
+    const pill = document.getElementById('apiStatus');
+    const txt  = document.getElementById('apiTxt');
+    try {
+      const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(3000) });
+      if (r.ok) { pill.className = 'on';  txt.textContent = T[currentLang].online; }
+      else throw 0;
+    } catch { pill.className = 'off'; txt.textContent = T[currentLang].offline; }
+  }
+  ping(); setInterval(ping, 20000);
+
+  // ── Toggle chips ──────────────────────────────────────────────────────────────
+  document.querySelectorAll('.toggles').forEach(grp => {
+    grp.querySelectorAll('.tog').forEach(btn => {
+      btn.onclick = () => {
+        grp.querySelectorAll('.tog').forEach(b => b.classList.remove('sel'));
+        btn.classList.add('sel');
+        sel[grp.id] = btn.dataset.val;
+        updateProgress();
+      };
+    });
+  });
+
+  // ── Other disease field ───────────────────────────────────────────────────────
+  document.getElementById('disease').onchange = function () {
+    document.getElementById('otherField').style.display = this.value === 'other' ? 'block' : 'none';
+    updateProgress();
+  };
+
+  // ── Progress bar ──────────────────────────────────────────────────────────────
+  const RF = ['name','age','hospital','disease'];
+  const RG = ['genderGroup','bplGroup','disabledGroup'];
+  function updateProgress() {
+    let n = 0;
+    RF.forEach(id => { if (document.getElementById(id)?.value.trim()) n++; });
+    RG.forEach(id => { if (sel[id]) n++; });
+    document.getElementById('prog').style.width = (n / (RF.length + RG.length) * 100) + '%';
+  }
+  RF.forEach(id => document.getElementById(id)?.addEventListener('input', updateProgress));
+
+  // ── Geolocation ───────────────────────────────────────────────────────────────
+  function getGeo() {
+    const btn  = document.getElementById('geoBtn');
+    const icon = document.getElementById('geoIcon');
+    const txt  = document.getElementById('geoTxt');
+    if (!navigator.geolocation) { txt.textContent = T[currentLang].locNoSupport; return; }
+    btn.className    = 'geo-btn';
+    icon.textContent = '…';
+    txt.textContent  = T[currentLang].locating;
+    navigator.geolocation.getCurrentPosition(
+      p => {
+        gps = { lat: p.coords.latitude, lng: p.coords.longitude };
+        btn.className    = 'geo-btn ok';
+        icon.textContent = '✓';
+        txt.textContent  = T[currentLang].locCaptured;
+        const box = document.getElementById('geoResult');
+        box.textContent = `${gps.lat.toFixed(5)}, ${gps.lng.toFixed(5)}`;
+        box.classList.add('show');
+      },
+      e => {
+        btn.className    = 'geo-btn fail';
+        icon.textContent = '✕';
+        const msgs = ['', T[currentLang].locDenied, T[currentLang].locUnavail, T[currentLang].locTimeout];
+        txt.textContent = msgs[e.code] || T[currentLang].locFailed;
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  }
+
+  // ── Submit ────────────────────────────────────────────────────────────────────
+  document.getElementById('form').onsubmit = async function (e) {
+    e.preventDefault();
+    hideErr();
+
+    const name     = document.getElementById('name').value.trim();
+    const age      = parseInt(document.getElementById('age').value);
+    const hospital = document.getElementById('hospital').value.trim();
+    const disease  = document.getElementById('disease').value;
+
+    if (!name || !age || !hospital || !disease || !sel.genderGroup || !sel.bplGroup || !sel.disabledGroup) {
+      showErr(T[currentLang].errRequired); return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled    = true;
+    btn.textContent = T[currentLang].submitting;
+
+    try {
+      const res = await fetch(`${API}/api/referral`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name, age,
+          gender:       sel.genderGroup,
+          hospital,
+          disease,
+          otherDisease: disease === 'other' ? document.getElementById('otherDisease').value.trim() : null,
+          bplStatus:    sel.bplGroup,
+          disabled:     sel.disabledGroup,
+          location:     gps,
+          address:      document.getElementById('address').value.trim(),
+          timestamp:    new Date().toISOString()
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = Array.isArray(data.detail) ? data.detail[0] : (data.detail || 'Error');
+        throw new Error(msg);
+      }
+
+      sessionStorage.setItem('referralResult', JSON.stringify(data));
+      window.location.href = 'result.html';
+
+    } catch (err) {
+      showErr(err.message || T[currentLang].errApi);
+    } finally {
+      btn.disabled    = false;
+      btn.textContent = T[currentLang].submitBtn;
+    }
+  };
+
+  function showErr(msg) {
+    const b = document.getElementById('errBanner');
+    b.textContent = '✕ ' + msg;
+    b.className = 'err-banner show';
+    b.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function hideErr() {
+    document.getElementById('errBanner').className = 'err-banner';
+  }
+</script>
 </body>
-
 </html>
