@@ -16,8 +16,8 @@
       --teal:        #0D6E6E;
       --teal-light:  #E6F4F4;
       --teal-hover:  #0A5858;
-      --saffron:     #E8821A;
-      --saffron-lt:  #FEF3E8;
+      --indigo:      #3730A3;
+      --indigo-lt:   #EEF2FF;
       --card-shadow: 0 2px 12px rgba(13,110,110,0.07), 0 1px 3px rgba(0,0,0,0.04);
       --radius:      12px;
       --radius-sm:   8px;
@@ -26,21 +26,33 @@
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { font-size: 16px; scroll-behavior: smooth; }
-    body { background: var(--bg); font-family: var(--sans); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; -webkit-font-smoothing: antialiased; }
+    body {
+      background: var(--bg); font-family: var(--sans); color: var(--ink);
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px; -webkit-font-smoothing: antialiased;
+    }
 
-    .wrap { width: 100%; max-width: 440px; }
+    .wrap { width: 100%; max-width: 480px; }
 
-    .wordmark { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); background: var(--teal-light); border: 1px solid rgba(13,110,110,0.18); padding: 4px 10px; border-radius: 99px; display: inline-block; margin-bottom: 24px; }
+    .wordmark {
+      font-family: var(--mono); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--teal); background: var(--teal-light);
+      border: 1px solid rgba(13,110,110,0.18);
+      padding: 4px 10px; border-radius: 99px;
+      display: inline-block; margin-bottom: 24px;
+    }
 
     h1 { font-size: 34px; font-weight: 600; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 8px; }
-    .sub { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 40px; }
+    .sub { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 36px; }
 
-    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    @media (max-width: 400px) { .card-grid { grid-template-columns: 1fr; } }
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    @media (max-width: 420px) { .card-grid { grid-template-columns: 1fr; } }
 
     .nav-card {
       display: flex; flex-direction: column; align-items: flex-start;
-      gap: 12px; padding: 24px 20px;
+      gap: 10px; padding: 22px 18px;
       background: var(--white); border: 1px solid var(--border);
       border-radius: var(--radius); box-shadow: var(--card-shadow);
       text-decoration: none; color: inherit;
@@ -51,12 +63,48 @@
     .nav-card:nth-child(2) { animation-delay: 0.10s; }
     .nav-card:hover { border-color: rgba(13,110,110,0.3); box-shadow: 0 6px 24px rgba(13,110,110,0.12); transform: translateY(-2px); }
 
-    .nav-icon { font-size: 28px; line-height: 1; }
+    .nav-icon { font-size: 26px; line-height: 1; }
     .nav-label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-    .nav-title { font-size: 17px; font-weight: 600; color: var(--ink); }
+    .nav-title { font-size: 16px; font-weight: 600; color: var(--ink); }
     .nav-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .nav-arrow { margin-top: auto; font-size: 17px; color: var(--teal); }
 
-    .nav-arrow { margin-top: auto; font-size: 18px; color: var(--teal); }
+    /* Divider */
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 16px; }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-text { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+    /* Government card */
+    .gov-card {
+      display: flex; align-items: center; gap: 18px;
+      padding: 20px 22px; width: 100%;
+      background: var(--white); border: 1px solid rgba(55,48,163,0.2);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 12px rgba(55,48,163,0.06), 0 1px 3px rgba(0,0,0,0.04);
+      text-decoration: none; color: inherit;
+      transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+      animation: fadeUp 0.35s ease 0.18s both;
+    }
+    .gov-card:hover { border-color: rgba(55,48,163,0.4); box-shadow: 0 6px 24px rgba(55,48,163,0.12); transform: translateY(-2px); }
+
+    .gov-icon-wrap {
+      width: 50px; height: 50px; border-radius: 10px;
+      background: var(--indigo-lt); display: flex;
+      align-items: center; justify-content: center;
+      font-size: 24px; flex-shrink: 0;
+    }
+    .gov-body { flex: 1; min-width: 0; }
+    .gov-label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--indigo); margin-bottom: 3px; }
+    .gov-title { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+    .gov-desc { font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .gov-badges { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+    .gov-badge {
+      font-family: var(--mono); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.05em; padding: 2px 8px; border-radius: 99px;
+      background: var(--indigo-lt); color: var(--indigo);
+      border: 1px solid rgba(55,48,163,0.15);
+    }
+    .gov-arrow { font-size: 20px; color: var(--indigo); flex-shrink: 0; }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -83,6 +131,27 @@
         <div class="nav-arrow">→</div>
       </a>
     </div>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-text">Also available</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <a href="gov_analytics.html" class="gov-card">
+      <div class="gov-icon-wrap">🏛</div>
+      <div class="gov-body">
+        <div class="gov-label">Analytics Portal</div>
+        <div class="gov-title">Government / Third-Party</div>
+        <div class="gov-desc">Bed capacity, hospital density &amp; regional health metrics.</div>
+        <div class="gov-badges">
+          <span class="gov-badge">NHM</span>
+          <span class="gov-badge">State Dept.</span>
+          <span class="gov-badge">NGO / Research</span>
+        </div>
+      </div>
+      <div class="gov-arrow">→</div>
+    </a>
   </div>
 </body>
 </html>
