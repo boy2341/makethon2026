@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <title>Analytics Dashboard — Jeevan-Setu</title>
+  <style>
+    :root {
+      --bg:          #F5F3EE;
+      --white:       #FFFFFF;
+      --ink:         #1A1A2E;
+      --muted:       #7A7D8C;
+      --border:      #DDD9D0;
+      --border-dark: #C8C3B8;
+      --teal:        #0D6E6E;
+      --teal-light:  #E6F4F4;
+      --indigo:      #3730A3;
+      --indigo-lt:   #EEF2FF;
+      --indigo-mid:  #4338CA;
+      --green:       #2D7A4F;
+      --green-lt:    #E8F5EE;
+      --saffron:     #E8821A;
+      --saffron-lt:  #FEF3E8;
+      --red:         #C0392B;
+      --red-lt:      #FDECEA;
+      --gold:        #C8941A;
+      --gold-lt:     #FEF9E7;
+      --card-shadow: 0 2px 12px rgba(13,110,110,0.07), 0 1px 3px rgba(0,0,0,0.04);
+      --radius:      12px;
+      --radius-sm:   8px;
+      --sans:        'IBM Plex Sans', system-ui, sans-serif;
+      --mono:        'IBM Plex Mono', 'Courier New', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { background: var(--bg); font-family: var(--sans); color: var(--ink); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 99px; }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 28px; background: rgba(245,243,238,0.94);
+      backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .wordmark { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); background: var(--teal-light); border: 1px solid rgba(13,110,110,0.18); padding: 4px 10px; border-radius: 99px; text-decoration: none; }
+    .page-label { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--indigo); background: var(--indigo-lt); border: 1px solid rgba(55,48,163,0.18); padding: 4px 10px; border-radius: 99px; }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .logout-btn { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: none; border: 1px solid var(--border); padding: 4px 10px; border-radius: 99px; cursor: pointer; transition: all 0.15s; }
+    .logout-btn:hover { color: var(--teal); border-color: rgba(13,110,110,0.3); background: var(--teal-light); }
+
+    /* ── Page wrap ── */
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 36px 28px 80px; }
+    @media (max-width: 700px) { .wrap { padding: 24px 16px 60px; } }
+
+    /* ── Page header ── */
+    .page-hd { margin-bottom: 36px; }
+    .page-hd h1 { font-size: clamp(24px,4vw,36px); font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .page-hd .sub { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+      padding: 18px 20px; background: var(--white);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--card-shadow); margin-bottom: 28px;
+      animation: fadeUp 0.3s ease both;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; min-width: 160px; flex: 1; }
+    .filter-group label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--muted); }
+    .filter-group select, .filter-group input {
+      padding: 9px 12px; border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); font-family: var(--sans);
+      font-size: 13px; color: var(--ink); background: var(--white);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none; appearance: none; width: 100%;
+    }
+    .filter-group select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237A7D8C' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px; cursor: pointer;
+    }
+    .filter-group select:focus, .filter-group input:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(55,48,163,0.09); }
+    .apply-btn {
+      padding: 10px 22px; background: var(--indigo); color: var(--white);
+      border: none; border-radius: var(--radius-sm); font-family: var(--sans);
+      font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+      box-shadow: 0 3px 10px rgba(55,48,163,0.25);
+      transition: all 0.2s; align-self: flex-end;
+    }
+    .apply-btn:hover { background: var(--indigo-mid); transform: translateY(-1px); }
+
+    /* ── KPI grid ── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 14px; margin-bottom: 28px; }
+    .kpi-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 18px;
+      box-shadow: var(--card-shadow);
+      animation: fadeUp 0.35s ease both;
+    }
+    .kpi-card:nth-child(1) { animation-delay: 0.04s; }
+    .kpi-card:nth-child(2) { animation-delay: 0.08s; }
+    .kpi-card:nth-child(3) { animation-delay: 0.12s; }
+    .kpi-card:nth-child(4) { animation-delay: 0.16s; }
+    .kpi-card:nth-child(5) { animation-delay: 0.20s; }
+    .kpi-card:nth-child(6) { animation-delay: 0.24s; }
+    .kpi-icon { font-size: 20px; margin-bottom: 10px; }
+    .kpi-val { font-size: 30px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; margin-bottom: 4px; }
+    .kpi-label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--muted); }
+    .kpi-delta { font-family: var(--mono); font-size: 11px; font-weight: 600; margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; }
+    .kpi-delta.up   { background: var(--green-lt);   color: var(--green); }
+    .kpi-delta.down { background: var(--red-lt);     color: var(--red); }
+    .kpi-delta.flat { background: var(--gold-lt);    color: var(--gold); }
+
+    /* ── Section head ── */
+    .sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .sec-head h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+    .sec-tag { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 99px; }
+    .sec-tag.indigo { background: var(--indigo-lt); color: var(--indigo); border: 1px solid rgba(55,48,163,0.15); }
+    .sec-tag.teal   { background: var(--teal-light); color: var(--teal);   border: 1px solid rgba(13,110,110,0.18); }
+
+    /* ── Two column layout ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+    @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+    @media (max-width: 900px) { .three-col { grid-template-columns: 1fr; } }
+
+    /* ── Chart card ── */
+    .chart-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px 20px;
+      box-shadow: var(--card-shadow); animation: fadeUp 0.4s ease 0.1s both;
+    }
+    .chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .chart-sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+
+    /* Bar chart */
+    .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+    .bar-row { display: grid; grid-template-columns: 110px 1fr 52px; align-items: center; gap: 10px; }
+    .bar-label { font-size: 12px; color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { height: 10px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
+    .bar-val { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--ink); text-align: right; }
+
+    /* Donut chart (CSS) */
+    .donut-wrap { display: flex; align-items: center; gap: 24px; }
+    .donut { width: 120px; height: 120px; border-radius: 50%; flex-shrink: 0; }
+    .donut-legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-row { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .legend-name { font-size: 12px; color: var(--ink); }
+    .legend-pct { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--muted); margin-left: auto; }
+
+    /* Sparkline (CSS) */
+    .sparkline-wrap { position: relative; height: 80px; margin-top: 8px; }
+    .spark-svg { width: 100%; height: 100%; }
+
+    /* ── Input panel ── */
+    .input-panel {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--card-shadow); margin-bottom: 28px;
+      animation: fadeUp 0.4s ease 0.15s both;
+    }
+    .input-panel-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 16px 22px; border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg,#FAFAF8,#F5F3EE);
+    }
+    .input-panel-head span:first-child { font-size: 18px; }
+    .input-panel-head-label { font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .input-panel-head-desc { font-size: 13px; color: var(--ink); font-weight: 600; }
+    .input-panel-body { padding: 22px; }
+    .input-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 16px; margin-bottom: 18px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.02em; }
+    .field input, .field select {
+      width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); font-family: var(--sans);
+      font-size: 14px; color: var(--ink); background: var(--white);
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237A7D8C' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer;
+    }
+    .field input:focus, .field select:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(55,48,163,0.09); }
+    .field input::placeholder { color: #BDBCC8; }
+    .row-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-submit {
+      padding: 11px 24px; background: var(--indigo); color: var(--white);
+      border: none; border-radius: var(--radius-sm); font-family: var(--sans);
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      box-shadow: 0 3px 10px rgba(55,48,163,0.25); transition: all 0.2s;
+    }
+    .btn-submit:hover { background: var(--indigo-mid); transform: translateY(-1px); }
+    .btn-reset {
+      padding: 11px 18px; background: transparent; color: var(--muted);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-family: var(--sans); font-size: 13px; font-weight: 500; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-reset:hover { background: var(--bg); color: var(--ink); }
+    .success-msg {
+      display: none; padding: 10px 14px; background: var(--green-lt);
+      border: 1px solid rgba(45,122,79,0.25); border-radius: var(--radius-sm);
+      font-size: 13px; color: var(--green); font-weight: 500; margin-top: 12px;
+    }
+    .success-msg.show { display: block; }
+
+    /* ── Data table ── */
+    .table-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--card-shadow); margin-bottom: 28px;
+      animation: fadeUp 0.4s ease 0.2s both;
+    }
+    .table-head-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg,#FAFAF8,#F5F3EE); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { padding: 11px 16px; text-align: left; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; background: #FAFAF8; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--bg); }
+    tbody td { padding: 11px 16px; color: var(--ink); }
+    .td-mono { font-family: var(--mono); font-size: 12px; }
+    .badge { display: inline-block; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 99px; }
+    .badge-green  { background: var(--green-lt);  color: var(--green); }
+    .badge-orange { background: var(--saffron-lt); color: var(--saffron); }
+    .badge-red    { background: var(--red-lt);     color: var(--red); }
+    .badge-teal   { background: var(--teal-light); color: var(--teal); }
+
+    /* occupancy bar */
+    .occ-bar { display: flex; align-items: center; gap: 8px; }
+    .occ-track { flex: 1; height: 6px; background: var(--bg); border-radius: 99px; min-width: 60px; }
+    .occ-fill { height: 100%; border-radius: 99px; }
+    .occ-pct { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--ink); min-width: 34px; text-align: right; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="login_primary.html" class="wordmark">Jeevan-Setu</a>
+      <span class="page-label">Analytics Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <button class="logout-btn" onclick="logout()">← Back to Home</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- Page header -->
+    <div class="page-hd">
+      <h1>Regional Health<br>Infrastructure Overview</h1>
+      <p class="sub">Live aggregated data across hospitals, beds, and specialisations. Filter by state or district below.</p>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>State</label>
+        <select id="fState" onchange="updateDistricts()">
+          <option value="all">All States</option>
+          <option value="AP">Andhra Pradesh</option>
+          <option value="TS">Telangana</option>
+          <option value="KA">Karnataka</option>
+          <option value="MH">Maharashtra</option>
+          <option value="RJ">Rajasthan</option>
+          <option value="UP">Uttar Pradesh</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>District</label>
+        <select id="fDistrict">
+          <option value="all">All Districts</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Hospital Type</label>
+        <select id="fType">
+          <option value="all">All Types</option>
+          <option value="govt">Government</option>
+          <option value="private">Private</option>
+          <option value="chc">CHC / PHC</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Specialisation</label>
+        <select id="fSpec">
+          <option value="all">All</option>
+          <option value="cardiology">Cardiology</option>
+          <option value="pediatrics">Pediatrics</option>
+          <option value="orthopedics">Orthopedics</option>
+          <option value="oncology">Oncology</option>
+          <option value="general">General</option>
+        </select>
+      </div>
+      <button class="apply-btn" onclick="applyFilters()">Apply Filter →</button>
+    </div>
+
+    <!-- KPI grid -->
+    <div class="kpi-grid" id="kpiGrid">
+      <!-- injected by JS -->
+    </div>
+
+    <!-- Charts row 1 -->
+    <div class="two-col">
+      <div class="chart-card">
+        <div class="sec-head">
+          <div>
+            <h3>Hospitals by District</h3>
+            <div class="chart-sub">Number of registered hospitals per district</div>
+          </div>
+          <span class="sec-tag indigo">Bar</span>
+        </div>
+        <div class="bar-chart" id="districtBars"></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="sec-head">
+          <div>
+            <h3>Bed Occupancy Rate</h3>
+            <div class="chart-sub">% of total beds currently in use</div>
+          </div>
+          <span class="sec-tag teal">Live</span>
+        </div>
+        <div class="bar-chart" id="occupancyBars"></div>
+      </div>
+    </div>
+
+    <!-- Charts row 2 -->
+    <div class="two-col">
+      <div class="chart-card">
+        <div class="sec-head">
+          <div>
+            <h3>Hospital Type Split</h3>
+            <div class="chart-sub">Government vs Private vs CHC/PHC</div>
+          </div>
+          <span class="sec-tag indigo">Donut</span>
+        </div>
+        <div class="donut-wrap" id="donutWrap">
+          <canvas class="donut" id="donutCanvas" width="120" height="120"></canvas>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="sec-head">
+          <div>
+            <h3>Bed Availability Trend</h3>
+            <div class="chart-sub">Available beds over the last 7 days</div>
+          </div>
+          <span class="sec-tag teal">Sparkline</span>
+        </div>
+        <div class="sparkline-wrap">
+          <svg class="spark-svg" id="sparkSvg" viewBox="0 0 400 80" preserveAspectRatio="none"></svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;">
+          <span id="sparkDays" style="font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;gap:28px;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Government Data Input Panel -->
+    <div class="input-panel">
+      <div class="input-panel-head">
+        <span>📥</span>
+        <div>
+          <div class="input-panel-label">Data Submission</div>
+          <div class="input-panel-head-desc">Submit / Update Hospital Infrastructure Data</div>
+        </div>
+      </div>
+      <div class="input-panel-body">
+        <div class="input-grid">
+          <div class="field">
+            <label>State</label>
+            <select id="inState">
+              <option value="">Select state…</option>
+              <option>Andhra Pradesh</option><option>Telangana</option>
+              <option>Karnataka</option><option>Maharashtra</option>
+              <option>Rajasthan</option><option>Uttar Pradesh</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>District</label>
+            <input type="text" id="inDistrict" placeholder="e.g. Anantapur" />
+          </div>
+          <div class="field">
+            <label>Hospital Name</label>
+            <input type="text" id="inHospName" placeholder="e.g. District General Hospital" />
+          </div>
+          <div class="field">
+            <label>Hospital Type</label>
+            <select id="inHospType">
+              <option value="">Select type…</option>
+              <option>Government</option><option>Private</option>
+              <option>CHC</option><option>PHC</option><option>Sub-Centre</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Total Beds</label>
+            <input type="number" id="inTotalBeds" placeholder="e.g. 250" min="0" />
+          </div>
+          <div class="field">
+            <label>Available Beds</label>
+            <input type="number" id="inAvailBeds" placeholder="e.g. 80" min="0" />
+          </div>
+          <div class="field">
+            <label>ICU Beds</label>
+            <input type="number" id="inIcuBeds" placeholder="e.g. 12" min="0" />
+          </div>
+          <div class="field">
+            <label>Specialisation</label>
+            <input type="text" id="inSpec" placeholder="e.g. Cardiology, Pediatrics" />
+          </div>
+          <div class="field">
+            <label>Doctors on Duty</label>
+            <input type="number" id="inDoctors" placeholder="e.g. 18" min="0" />
+          </div>
+          <div class="field">
+            <label>Insurance Accepted</label>
+            <input type="text" id="inInsurance" placeholder="e.g. CGHS, AB-PMJAY" />
+          </div>
+          <div class="field">
+            <label>Emergency Services</label>
+            <select id="inEmergency">
+              <option value="">Select…</option>
+              <option>Yes</option><option>No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Data as of Date</label>
+            <input type="date" id="inDate" />
+          </div>
+        </div>
+        <div class="row-actions">
+          <button class="btn-submit" onclick="submitData()">Submit Data →</button>
+          <button class="btn-reset" onclick="resetForm()">Clear</button>
+        </div>
+        <div class="success-msg" id="successMsg">✓ Data submitted successfully. The dashboard will reflect the update shortly.</div>
+      </div>
+    </div>
+
+    <!-- Hospital Data Table -->
+    <div class="table-card">
+      <div class="table-head-row">
+        <div>
+          <div class="sec-head" style="margin-bottom:0">
+            <h2>Hospital Directory</h2>
+            <span class="sec-tag indigo" style="margin-left:12px" id="tableCount"></span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px;">Filtered hospital data with bed status</div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="hospitalTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Hospital</th>
+              <th>District</th>
+              <th>Type</th>
+              <th>Specialisation</th>
+              <th>Total Beds</th>
+              <th>Available</th>
+              <th>ICU</th>
+              <th>Occupancy</th>
+              <th>Emergency</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+
+  <script>
+    function logout() { window.location.href = 'login_primary.html'; }
+
+    // ── Master dataset ────────────────────────────────────────────────────────
+    const HOSPITALS = [
+      { name:'District General Hospital', district:'Anantapur',    state:'AP', type:'govt',    spec:'General',     total:310, avail:92,  icu:14, doctors:22, ins:'CGHS, AB-PMJAY', emergency:'Yes' },
+      { name:'Rajiv Gandhi Govt Hospital', district:'Kurnool',     state:'AP', type:'govt',    spec:'Cardiology',  total:480, avail:110, icu:28, doctors:34, ins:'AB-PMJAY',       emergency:'Yes' },
+      { name:'NRI Medical College',        district:'Guntur',      state:'AP', type:'private', spec:'Oncology',    total:620, avail:145, icu:40, doctors:56, ins:'CGHS',            emergency:'Yes' },
+      { name:'CHC Tadipatri',              district:'Anantapur',   state:'AP', type:'chc',     spec:'General',     total: 50, avail: 18, icu: 0, doctors: 4, ins:'AB-PMJAY',       emergency:'No' },
+      { name:'PHC Madanapalle',            district:'Chittoor',    state:'AP', type:'chc',     spec:'General',     total: 30, avail: 12, icu: 0, doctors: 2, ins:'None',            emergency:'No' },
+      { name:'Nizam Institute of Med Sci', district:'Hyderabad',   state:'TS', type:'govt',    spec:'Neurology',   total:900, avail:230, icu:60, doctors:88, ins:'CGHS, AB-PMJAY', emergency:'Yes' },
+      { name:'Apollo Hospitals',           district:'Hyderabad',   state:'TS', type:'private', spec:'Cardiology',  total:550, avail:98,  icu:45, doctors:70, ins:'CGHS',            emergency:'Yes' },
+      { name:'Osmania General Hospital',   district:'Hyderabad',   state:'TS', type:'govt',    spec:'General',     total:800, avail:200, icu:35, doctors:65, ins:'AB-PMJAY',        emergency:'Yes' },
+      { name:'Victoria Hospital',          district:'Bengaluru',   state:'KA', type:'govt',    spec:'General',     total:700, avail:160, icu:30, doctors:55, ins:'AB-PMJAY, CGHS',  emergency:'Yes' },
+      { name:'Narayana Health City',       district:'Bengaluru',   state:'KA', type:'private', spec:'Cardiology',  total:1200,avail:310, icu:90, doctors:120,ins:'CGHS',            emergency:'Yes' },
+      { name:'KEM Hospital',               district:'Mumbai',      state:'MH', type:'govt',    spec:'General',     total:1800,avail:420, icu:120,doctors:180,ins:'AB-PMJAY, CGHS',  emergency:'Yes' },
+      { name:'CHC Nandurbar',              district:'Nandurbar',   state:'MH', type:'chc',     spec:'Pediatrics',  total: 60, avail: 22, icu: 2, doctors: 5, ins:'AB-PMJAY',       emergency:'No' },
+      { name:'SMS Hospital Jaipur',        district:'Jaipur',      state:'RJ', type:'govt',    spec:'Orthopedics', total:2500,avail:600, icu:100,doctors:220,ins:'CGHS, AB-PMJAY',  emergency:'Yes' },
+      { name:'Santokba Durlabhji Hosp',    district:'Jaipur',      state:'RJ', type:'private', spec:'Oncology',    total:350, avail:80,  icu:25, doctors:40, ins:'CGHS',            emergency:'Yes' },
+      { name:'SGPGI Lucknow',              district:'Lucknow',     state:'UP', type:'govt',    spec:'Neurology',   total:1900,avail:480, icu:80, doctors:190,ins:'CGHS, AB-PMJAY',  emergency:'Yes' },
+      { name:'CHC Hardoi',                 district:'Hardoi',      state:'UP', type:'chc',     spec:'General',     total: 40, avail: 14, icu: 0, doctors: 3, ins:'AB-PMJAY',       emergency:'No' },
+    ];
+
+    const DISTRICTS = {
+      AP: ['Anantapur','Kurnool','Guntur','Chittoor','Visakhapatnam'],
+      TS: ['Hyderabad','Warangal','Karimnagar','Nizamabad'],
+      KA: ['Bengaluru','Mysuru','Hubli','Mangaluru'],
+      MH: ['Mumbai','Pune','Nagpur','Nashik','Nandurbar'],
+      RJ: ['Jaipur','Udaipur','Jodhpur','Kota'],
+      UP: ['Lucknow','Kanpur','Agra','Hardoi','Varanasi'],
+    };
+
+    // ── District dropdown ─────────────────────────────────────────────────────
+    function updateDistricts() {
+      const st = document.getElementById('fState').value;
+      const sel = document.getElementById('fDistrict');
+      sel.innerHTML = '<option value="all">All Districts</option>';
+      if (st !== 'all' && DISTRICTS[st]) {
+        DISTRICTS[st].forEach(d => { const o = document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+      }
+    }
+
+    // ── Filter & render ───────────────────────────────────────────────────────
+    let filtered = [...HOSPITALS];
+
+    function applyFilters() {
+      const st   = document.getElementById('fState').value;
+      const dist = document.getElementById('fDistrict').value;
+      const type = document.getElementById('fType').value;
+      const spec = document.getElementById('fSpec').value;
+      filtered = HOSPITALS.filter(h => {
+        if (st   !== 'all' && h.state    !== st)   return false;
+        if (dist !== 'all' && h.district !== dist) return false;
+        if (type !== 'all' && h.type     !== type) return false;
+        if (spec !== 'all' && h.spec.toLowerCase() !== spec) return false;
+        return true;
+      });
+      renderAll();
+    }
+
+    function renderAll() {
+      renderKPIs();
+      renderDistrictBars();
+      renderOccupancyBars();
+      renderDonut();
+      renderSparkline();
+      renderTable();
+    }
+
+    // ── KPIs ──────────────────────────────────────────────────────────────────
+    function renderKPIs() {
+      const totalHosp  = filtered.length;
+      const totalBeds  = filtered.reduce((s,h)=>s+h.total,0);
+      const availBeds  = filtered.reduce((s,h)=>s+h.avail,0);
+      const icuBeds    = filtered.reduce((s,h)=>s+h.icu,0);
+      const occupancy  = totalBeds ? Math.round((totalBeds-availBeds)/totalBeds*100) : 0;
+      const emergency  = filtered.filter(h=>h.emergency==='Yes').length;
+
+      const kpis = [
+        { icon:'🏥', val: totalHosp,              label:'Total Hospitals',    delta:'+3 this month',    dir:'up'   },
+        { icon:'🛏', val: totalBeds.toLocaleString(), label:'Total Beds',      delta:'vs last quarter',  dir:'flat' },
+        { icon:'✅', val: availBeds.toLocaleString(), label:'Available Beds',  delta:`${Math.round(availBeds/totalBeds*100)||0}% of total`, dir: availBeds/totalBeds>0.3?'up':'down' },
+        { icon:'🏨', val: icuBeds.toLocaleString(),   label:'ICU Beds',       delta:'across region',    dir:'flat' },
+        { icon:'📊', val: occupancy+'%',              label:'Bed Occupancy',  delta: occupancy>70?'High load':'Manageable', dir: occupancy>70?'down':'up' },
+        { icon:'🚨', val: emergency,                  label:'Emergency Ready', delta:`of ${totalHosp} hospitals`, dir:'up' },
+      ];
+
+      document.getElementById('kpiGrid').innerHTML = kpis.map(k=>`
+        <div class="kpi-card">
+          <div class="kpi-icon">${k.icon}</div>
+          <div class="kpi-val">${k.val}</div>
+          <div class="kpi-label">${k.label}</div>
+          <div class="kpi-delta ${k.dir}">${k.dir==='up'?'↑':k.dir==='down'?'↓':'→'} ${k.delta}</div>
+        </div>`).join('');
+    }
+
+    // ── District bar chart ────────────────────────────────────────────────────
+    function renderDistrictBars() {
+      const counts = {};
+      filtered.forEach(h => { counts[h.district] = (counts[h.district]||0)+1; });
+      const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      const max = sorted[0]?.[1] || 1;
+      const colors = ['#3730A3','#4338CA','#4F46E5','#6366F1','#818CF8','#A5B4FC','#C7D2FE','#E0E7FF'];
+      document.getElementById('districtBars').innerHTML = sorted.map(([d,c],i)=>`
+        <div class="bar-row">
+          <div class="bar-label" title="${d}">${d}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${c/max*100}%;background:${colors[i]||colors[colors.length-1]}"></div></div>
+          <div class="bar-val">${c}</div>
+        </div>`).join('');
+    }
+
+    // ── Occupancy bars ────────────────────────────────────────────────────────
+    function renderOccupancyBars() {
+      const districts = [...new Set(filtered.map(h=>h.district))].slice(0,7);
+      document.getElementById('occupancyBars').innerHTML = districts.map(d=>{
+        const dh = filtered.filter(h=>h.district===d);
+        const tot = dh.reduce((s,h)=>s+h.total,0);
+        const occ = tot ? Math.round((tot-dh.reduce((s,h)=>s+h.avail,0))/tot*100) : 0;
+        const col = occ>80?'#C0392B':occ>60?'#E8821A':'#2D7A4F';
+        return `<div class="bar-row">
+          <div class="bar-label" title="${d}">${d}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${occ}%;background:${col}"></div></div>
+          <div class="bar-val">${occ}%</div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Donut chart ───────────────────────────────────────────────────────────
+    function renderDonut() {
+      const govt    = filtered.filter(h=>h.type==='govt').length;
+      const private_= filtered.filter(h=>h.type==='private').length;
+      const chc     = filtered.filter(h=>h.type==='chc').length;
+      const total   = filtered.length || 1;
+      const segments = [
+        { label:'Government', count: govt,     pct: Math.round(govt/total*100),     color:'#3730A3' },
+        { label:'Private',    count: private_, pct: Math.round(private_/total*100), color:'#0D6E6E' },
+        { label:'CHC / PHC',  count: chc,      pct: Math.round(chc/total*100),      color:'#E8821A' },
+      ];
+
+      const canvas = document.getElementById('donutCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,120,120);
+      let startAngle = -Math.PI/2;
+      segments.forEach(seg => {
+        const slice = (seg.pct/100)*2*Math.PI;
+        ctx.beginPath(); ctx.moveTo(60,60);
+        ctx.arc(60,60,56,startAngle,startAngle+slice);
+        ctx.fillStyle = seg.color; ctx.fill();
+        startAngle += slice;
+      });
+      // donut hole
+      ctx.beginPath(); ctx.arc(60,60,34,0,2*Math.PI);
+      ctx.fillStyle = '#fff'; ctx.fill();
+      // center text
+      ctx.fillStyle = '#1A1A2E'; ctx.font = '600 18px IBM Plex Sans, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(total, 60, 60);
+
+      document.getElementById('donutLegend').innerHTML = segments.map(s=>`
+        <div class="legend-row">
+          <div class="legend-dot" style="background:${s.color}"></div>
+          <span class="legend-name">${s.label}</span>
+          <span class="legend-pct">${s.pct}%</span>
+        </div>`).join('');
+    }
+
+    // ── Sparkline ─────────────────────────────────────────────────────────────
+    function renderSparkline() {
+      const base = filtered.reduce((s,h)=>s+h.avail,0);
+      const days  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      const vals  = days.map((_,i)=> Math.max(0, base + Math.round((Math.random()-0.45)*base*0.12 + i*0.5)));
+      const min = Math.min(...vals), max = Math.max(...vals)||1;
+      const W=400, H=80, pad=6;
+      const pts = vals.map((v,i)=>`${(i/(vals.length-1))*(W-pad*2)+pad},${H-pad-(v-min)/(max-min||1)*(H-pad*2)}`);
+
+      const svg = document.getElementById('sparkSvg');
+      svg.innerHTML = `
+        <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3730A3" stop-opacity="0.15"/><stop offset="100%" stop-color="#3730A3" stop-opacity="0"/></linearGradient></defs>
+        <path d="M${pts.join('L')}L${W-pad},${H}L${pad},${H}Z" fill="url(#sg)"/>
+        <path d="M${pts.join('L')}" fill="none" stroke="#3730A3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${pts.map((p,i)=>`<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="3.5" fill="#3730A3"/>`).join('')}
+      `;
+      document.getElementById('sparkDays').innerHTML = days.map(d=>`<span style="font-family:var(--mono);font-size:10px;color:var(--muted)">${d}</span>`).join('');
+    }
+
+    // ── Table ─────────────────────────────────────────────────────────────────
+    function renderTable() {
+      document.getElementById('tableCount').textContent = `${filtered.length} hospitals`;
+      document.getElementById('tableBody').innerHTML = filtered.map((h,i)=>{
+        const occ = h.total ? Math.round((h.total-h.avail)/h.total*100) : 0;
+        const occColor = occ>80?'#C0392B':occ>60?'#E8821A':'#2D7A4F';
+        const statusCls = h.avail > h.total*0.25 ? 'badge-green' : h.avail>0 ? 'badge-orange' : 'badge-red';
+        const statusTxt = h.avail > h.total*0.25 ? 'Available' : h.avail>0 ? 'Limited' : 'Full';
+        const typeCls = h.type==='govt'?'badge-teal':h.type==='private'?'badge-indigo':'badge-orange';
+        return `<tr>
+          <td class="td-mono" style="color:var(--muted)">${i+1}</td>
+          <td style="font-weight:600">${h.name}</td>
+          <td>${h.district}</td>
+          <td><span class="badge badge-teal">${h.type==='govt'?'Govt':h.type==='private'?'Private':'CHC/PHC'}</span></td>
+          <td>${h.spec}</td>
+          <td class="td-mono">${h.total.toLocaleString()}</td>
+          <td class="td-mono" style="color:${h.avail>0?'var(--green)':'var(--red)'};font-weight:600">${h.avail}</td>
+          <td class="td-mono">${h.icu}</td>
+          <td>
+            <div class="occ-bar">
+              <div class="occ-track"><div class="occ-fill" style="width:${occ}%;background:${occColor}"></div></div>
+              <span class="occ-pct">${occ}%</span>
+            </div>
+          </td>
+          <td><span class="badge ${h.emergency==='Yes'?'badge-green':'badge-red'}">${h.emergency}</span></td>
+          <td><span class="badge ${statusCls}">${statusTxt}</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── Data submission ───────────────────────────────────────────────────────
+    function submitData() {
+      const fields = ['inState','inDistrict','inHospName','inHospType','inTotalBeds','inAvailBeds'];
+      const vals = fields.map(id => document.getElementById(id).value.trim());
+      if (vals.some(v=>!v)) { alert('Please fill in at least: State, District, Hospital Name, Type, Total Beds, Available Beds.'); return; }
+
+      // Add to local dataset
+      HOSPITALS.push({
+        name: document.getElementById('inHospName').value.trim(),
+        district: document.getElementById('inDistrict').value.trim(),
+        state: { 'Andhra Pradesh':'AP','Telangana':'TS','Karnataka':'KA','Maharashtra':'MH','Rajasthan':'RJ','Uttar Pradesh':'UP' }[document.getElementById('inState').value] || 'AP',
+        type: { 'Government':'govt','Private':'private','CHC':'chc','PHC':'chc','Sub-Centre':'chc' }[document.getElementById('inHospType').value] || 'govt',
+        spec: document.getElementById('inSpec').value.trim() || 'General',
+        total: parseInt(document.getElementById('inTotalBeds').value)||0,
+        avail: parseInt(document.getElementById('inAvailBeds').value)||0,
+        icu:   parseInt(document.getElementById('inIcuBeds').value)||0,
+        doctors: parseInt(document.getElementById('inDoctors').value)||0,
+        ins: document.getElementById('inInsurance').value.trim() || 'None',
+        emergency: document.getElementById('inEmergency').value || 'No',
+      });
+
+      document.getElementById('successMsg').classList.add('show');
+      setTimeout(()=>document.getElementById('successMsg').classList.remove('show'),4000);
+      applyFilters();
+    }
+
+    function resetForm() {
+      ['inState','inDistrict','inHospName','inHospType','inTotalBeds','inAvailBeds','inIcuBeds','inSpec','inDoctors','inInsurance','inEmergency','inDate'].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el.tagName==='SELECT') el.selectedIndex=0; else el.value='';
+      });
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    document.getElementById('inDate').valueAsDate = new Date();
+    renderAll();
+  </script>
+</body>
+</html>
