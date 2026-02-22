@@ -6,154 +6,95 @@
 <title>Referral Result — Jeevan-Setu</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f7f6f3;
-    --white: #ffffff;
-    --ink: #111318;
-    --muted: #8a8f9a;
-    --border: #e2e0da;
-    --accent: #1a56db;
-    --accent-pale: #eef3fe;
-    --green: #0d7a4e;
-    --green-pale: #ebfaf3;
-    --red: #c0392b;
-    --red-pale: #fdf0ee;
-    --amber: #b45309;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'IBM Plex Sans', sans-serif;
-  }
+:root {
+  --bg:          #F5F3EE;
+  --white:       #FFFFFF;
+  --ink:         #1A1A2E;
+  --muted:       #7A7D8C;
+  --border:      #DDD9D0;
+  --border-dark: #C8C3B8;
+  --teal:        #0D6E6E;
+  --teal-light:  #E6F4F4;
+  --teal-hover:  #0A5858;
+  --saffron:     #E8821A;
+  --saffron-lt:  #FEF3E8;
+  --green:       #2D7A4F;
+  --green-lt:    #E8F5EE;
+  --red:         #C0392B;
+  --red-lt:      #FDECEA;
+  --blue:        #1565C0;
+  --blue-lt:     #E3F0FF;
+  --card-shadow: 0 2px 12px rgba(13,110,110,0.07), 0 1px 3px rgba(0,0,0,0.04);
+  --radius:      12px;
+  --radius-sm:   8px;
+  --sans:        'IBM Plex Sans', system-ui, sans-serif;
+  --mono:        'IBM Plex Mono', 'Courier New', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body { background: var(--bg); font-family: var(--sans); color: var(--ink); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 99px; }
+.wrap { max-width: 620px; margin: 0 auto; padding: 24px 16px 80px; }
+@media (min-width: 640px) { .wrap { padding: 40px 24px 100px; } }
+.hd { margin-bottom: 28px; }
+.hd-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.wordmark { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal); background: var(--teal-light); border: 1px solid rgba(13,110,110,0.18); padding: 4px 10px; border-radius: 99px; }
+.back-btn { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--muted); text-decoration: none; padding: 5px 12px; border: 1px solid var(--border); border-radius: 99px; background: var(--white); transition: all 0.2s; }
+.back-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+.hd h1 { font-size: 26px; font-weight: 600; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 6px; }
+@media (min-width: 640px) { .hd h1 { font-size: 32px; } }
+.sub { font-size: 14px; color: var(--muted); line-height: 1.5; }
+.result { display: flex; flex-direction: column; gap: 16px; animation: fadeUp 0.4s ease both; }
+.result-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: var(--green-lt); border: 1px solid rgba(45,122,79,0.22); border-radius: var(--radius); padding: 14px 18px; font-size: 13px; font-weight: 600; color: var(--green); }
+.ref-id { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--teal); background: var(--white); border: 1px solid rgba(13,110,110,0.2); padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s; user-select: none; }
+.ref-id:hover { background: var(--teal-light); border-color: var(--teal); }
+.summary { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.summary-cell { background: var(--white); padding: 14px 16px; }
+.summary-cell .k { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.summary-cell .v { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+.priority-HIGH { color: var(--red); }
+.priority-MEDIUM { color: var(--saffron); }
+.priority-NORMAL { color: var(--green); }
+.res-section { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--card-shadow); }
+.res-section-label { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 12px 18px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg,#FAFAF8,#F5F3EE); }
+.ai-text { padding: 18px; font-size: 14px; line-height: 1.7; color: var(--ink); background: linear-gradient(135deg,var(--teal-light),#EEF8F8); position: relative; }
+.ai-text::after { content: '✦'; position: absolute; top: 14px; right: 16px; color: var(--teal); font-size: 13px; opacity: 0.4; }
+.hosp-card { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.hosp-card:last-child { border-bottom: none; }
+.hosp-card:hover { background: #FAFAF8; }
+.hosp-rank { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--teal); background: var(--teal-light); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.hosp-info { flex: 1; min-width: 0; }
+.hosp-name { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hosp-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.hosp-spec { display: inline-block; font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--saffron); background: var(--saffron-lt); border: 1px solid rgba(232,130,26,0.2); padding: 2px 8px; border-radius: 99px; }
+.hosp-rating { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--saffron); flex-shrink: 0; padding-top: 2px; }
+.osm-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.osm-row:last-child { border-bottom: none; }
+.osm-row:hover { background: #FAFAF8; }
+.osm-name { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.badge-em { font-family: var(--mono); font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--red); background: var(--red-lt); border: 1px solid rgba(192,57,43,0.2); padding: 2px 7px; border-radius: 99px; }
+.osm-addr { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.osm-dist { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--teal); white-space: nowrap; flex-shrink: 0; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* Schemes */
+.schemes-grid { display: flex; flex-direction: column; }
+.scheme-card { display: flex; flex-direction: column; gap: 7px; padding: 16px 18px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+.scheme-card:last-child { border-bottom: none; }
+.scheme-card:hover { background: #FAFAF8; }
+.scheme-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.scheme-abbr { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--teal); background: var(--teal-light); border: 1px solid rgba(13,110,110,0.2); padding: 3px 9px; border-radius: 99px; white-space: nowrap; flex-shrink: 0; }
+.scheme-fullname { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+.scheme-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.scheme-link { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--blue); background: var(--blue-lt); border: 1px solid rgba(21,101,192,0.18); padding: 4px 11px; border-radius: 99px; text-decoration: none; transition: all 0.2s; width: fit-content; }
+.scheme-link:hover { background: var(--blue); color: var(--white); border-color: var(--blue); }
 
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--ink);
-    font-size: 14px;
-    line-height: 1.6;
-    min-height: 100vh;
-    padding: 48px 16px 80px;
-  }
-
-  .wrap { max-width: 560px; margin: 0 auto; }
-
-  /* ── Header ── */
-  .hd { margin-bottom: 28px; }
-
-  .hd-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-
-  .wordmark {
-    font-family: var(--mono);
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .back-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-family: var(--mono); font-size: 10px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted); text-decoration: none;
-    padding: 4px 10px; border: 1px solid var(--border);
-    border-radius: 100px; background: var(--white);
-    transition: all 0.15s;
-  }
-  .back-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 4px; }
-  .sub { font-size: 13px; color: var(--muted); }
-
-  /* ── Result card ── */
-  .result { border-radius: 12px; overflow: hidden; border: 1px solid #6ee7b7; background: var(--white); }
-
-  .result-head {
-    padding: 14px 20px;
-    font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
-    border-bottom: 1px solid #6ee7b7;
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    color: var(--green); background: var(--green-pale);
-  }
-
-  .ref-id {
-    font-family: var(--mono); font-size: 12px; font-weight: 600;
-    color: var(--accent); background: var(--accent-pale);
-    padding: 4px 10px; border-radius: 6px;
-    cursor: pointer; user-select: all; letter-spacing: 0.04em;
-  }
-
-  /* Summary grid */
-  .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
-  .summary-cell { background: var(--white); padding: 12px 16px; }
-  .summary-cell .k { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
-  .summary-cell .v { font-size: 13px; font-weight: 500; }
-
-  .priority-HIGH   { color: var(--red); }
-  .priority-MEDIUM { color: var(--amber); }
-  .priority-NORMAL { color: var(--green); }
-
-  /* Sections */
-  .res-section { border-top: 1px solid var(--border); padding: 16px 20px; }
-
-  .res-section-label {
-    font-family: var(--mono); font-size: 9px; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 10px;
-  }
-
-  /* AI explanation */
-  .ai-text {
-    font-size: 13px; line-height: 1.7; color: #374151;
-    background: var(--accent-pale); border-left: 3px solid var(--accent);
-    padding: 10px 14px; border-radius: 0 8px 8px 0;
-  }
-
-  /* Hospital cards */
-  .hosp-card { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .hosp-card:last-child { border-bottom: none; padding-bottom: 0; }
-  .hosp-rank { font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 18px; padding-top: 2px; }
-  .hosp-info { flex: 1; }
-  .hosp-name { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
-  .hosp-meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
-  .hosp-spec { display: inline-block; font-size: 11px; color: var(--accent); background: var(--accent-pale); padding: 2px 7px; border-radius: 4px; }
-  .hosp-rating { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; padding-top: 2px; }
-
-  /* OSM rows */
-  .osm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .osm-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .osm-name { font-size: 13px; font-weight: 500; color: var(--ink); }
-  .osm-addr { font-size: 11px; color: var(--muted); margin-top: 1px; }
-  .osm-dist { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
-  .badge-em { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--red); background: var(--red-pale); padding: 1px 5px; border-radius: 3px; margin-left: 5px; }
-
-  /* Schemes */
-  .schemes { display: flex; flex-wrap: wrap; gap: 5px; }
-  .scheme-tag { font-family: var(--mono); font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 4px; background: var(--accent-pale); color: var(--accent); letter-spacing: 0.04em; }
-
-  /* No data fallback */
-  .no-data {
-    text-align: center; padding: 60px 20px;
-    color: var(--muted); font-size: 14px;
-  }
-  .no-data a {
-    color: var(--accent); text-decoration: none; font-weight: 600;
-  }
-  .no-data a:hover { text-decoration: underline; }
-
-  /* New referral button */
-  .new-btn {
-    display: block; width: 100%; margin-top: 14px; padding: 13px;
-    background: var(--white); color: var(--accent);
-    border: 1.5px solid var(--accent); border-radius: 10px;
-    font-family: var(--sans); font-size: 14px; font-weight: 600;
-    cursor: pointer; text-align: center; text-decoration: none;
-    transition: background 0.15s;
-  }
-  .new-btn:hover { background: var(--accent-pale); }
+.new-btn { display: block; width: 100%; padding: 15px 24px; background: var(--teal); color: var(--white); border-radius: var(--radius); font-family: var(--sans); font-size: 15px; font-weight: 600; text-align: center; text-decoration: none; margin-top: 8px; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1); box-shadow: 0 4px 16px rgba(13,110,110,0.28); animation: fadeUp 0.4s 0.2s ease both; }
+.new-btn:hover { background: var(--teal-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,110,110,0.35); }
+.no-data { text-align: center; padding: 60px 24px; color: var(--muted); font-size: 15px; line-height: 1.7; }
+.no-data a { color: var(--teal); font-weight: 600; text-decoration: none; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -173,12 +114,14 @@
 
 </div>
 <script>
+  // ── 1. HTML escape ────────────────────────────────────────────────────────────
   function x(s) {
     return String(s).replace(/[&<>"']/g, c =>
       ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])
     );
   }
 
+  // ── 2. Copy referral ID ───────────────────────────────────────────────────────
   function copyId(id) {
     navigator.clipboard?.writeText(id);
     const el = document.getElementById('refIdSpan');
@@ -187,17 +130,101 @@
     setTimeout(() => el.textContent = old, 1200);
   }
 
+  // ── 3. Scheme metadata ────────────────────────────────────────────────────────
+  const SCHEME_INFO = {
+    'AB-PMJAY': {
+      full: 'Ayushman Bharat – Pradhan Mantri Jan Arogya Yojana',
+      desc: "World's largest health assurance scheme providing ₹5 lakh/year cover per family for secondary & tertiary hospitalisation to over 10 crore poor & vulnerable families.",
+      link: 'https://pmjay.gov.in'
+    },
+    'NHM': {
+      full: 'National Health Mission',
+      desc: 'Umbrella programme covering rural & urban health infrastructure, maternal & child health, disease control, and free medicines & diagnostics across India.',
+      link: 'https://nhm.gov.in'
+    },
+    'NRHM': {
+      full: 'National Rural Health Mission',
+      desc: 'Strengthens rural healthcare delivery with ASHAs, free drugs, mobile medical units, and improved PHC/CHC infrastructure targeting rural populations.',
+      link: 'https://nhm.gov.in/index1.php?lang=1&level=1&sublinkid=967&lid=209'
+    },
+    'NUHM': {
+      full: 'National Urban Health Mission',
+      desc: 'Addresses healthcare needs of urban poor through Urban PHCs, outreach services, and convergence with city local bodies for slum & vulnerable communities.',
+      link: 'https://nhm.gov.in/index1.php?lang=1&level=1&sublinkid=971&lid=210'
+    },
+    'CGHS': {
+      full: 'Central Government Health Scheme',
+      desc: 'Comprehensive healthcare for Central Government employees & pensioners — covers OPD, hospitalisation, medicines, and specialist consultations at empanelled hospitals.',
+      link: 'https://cghs.gov.in'
+    },
+    'AIIMS': {
+      full: 'All India Institute of Medical Sciences',
+      desc: 'Tertiary care referral to AIIMS hospitals offering subsidised/free treatment for BPL patients, advanced diagnostics, and specialist care across India.',
+      link: 'https://www.aiims.edu'
+    },
+    'OPD': {
+      full: 'Outpatient Department (Free OPD Services)',
+      desc: 'Free outpatient consultation at government hospitals under NHM — includes doctor consultation, basic diagnostics, and essential medicine dispensing.',
+      link: 'https://nhm.gov.in'
+    },
+    'NHA': {
+      full: 'National Health Authority',
+      desc: 'Apex body implementing AB-PMJAY and Digital Health Mission (ABDM/ABHA). Manages health IDs, health records, and beneficiary management for national schemes.',
+      link: 'https://nha.gov.in'
+    },
+    'ESI': {
+      full: "Employees' State Insurance Scheme",
+      desc: 'Social insurance for organised-sector workers — provides medical, maternity, disability, and dependent benefits through ESI hospitals & dispensaries.',
+      link: 'https://esic.gov.in'
+    },
+    'RSBY': {
+      full: 'Rashtriya Swasthya Bima Yojana',
+      desc: 'Smart-card based cashless hospitalisation cover of ₹30,000/year for BPL families, covering pre-existing conditions from day one of enrolment.',
+      link: 'https://labour.gov.in/rsby'
+    },
+    'PMSBY': {
+      full: 'Pradhan Mantri Suraksha Bima Yojana',
+      desc: 'Accidental death & disability insurance cover of ₹2 lakh at just ₹20/year premium for all bank account holders aged 18–70.',
+      link: 'https://www.jansuraksha.gov.in/Forms-PMSBY.aspx'
+    },
+    'PMJJBY': {
+      full: 'Pradhan Mantri Jeevan Jyoti Bima Yojana',
+      desc: 'Life insurance cover of ₹2 lakh on death for any reason at ₹436/year premium for bank account holders aged 18–50.',
+      link: 'https://www.jansuraksha.gov.in/Forms-PMJJBY.aspx'
+    }
+  };
+
+  // ── 4. Render one scheme card ─────────────────────────────────────────────────
+  function schemeCard(code) {
+    const info = SCHEME_INFO[code.trim()];
+    if (!info) {
+      return `<div class="scheme-card">
+        <div class="scheme-card-top">
+          <span class="scheme-fullname">${x(code)}</span>
+          <span class="scheme-abbr">${x(code)}</span>
+        </div>
+      </div>`;
+    }
+    return `<div class="scheme-card">
+      <div class="scheme-card-top">
+        <div class="scheme-fullname">${x(info.full)}</div>
+        <span class="scheme-abbr">${x(code.trim())}</span>
+      </div>
+      <div class="scheme-desc">${x(info.desc)}</div>
+      <a class="scheme-link" href="${info.link}" target="_blank" rel="noopener noreferrer">↗ Official Website</a>
+    </div>`;
+  }
+
+  // ── 5. Main render ────────────────────────────────────────────────────────────
   function render(d) {
     const container = document.getElementById('content');
 
-    // AI section
     const aiHTML = d.ai_explanation ? `
       <div class="res-section">
         <div class="res-section-label">AI Recommendation</div>
         <div class="ai-text">${x(d.ai_explanation)}</div>
       </div>` : '';
 
-    // Recommended hospitals
     const hospHTML = d.recommended_hospitals?.length ? `
       <div class="res-section">
         <div class="res-section-label">Recommended Hospitals</div>
@@ -218,7 +245,6 @@
         `).join('')}
       </div>` : '';
 
-    // OSM nearby hospitals
     const osmHTML = d.nearby_osm_hospitals?.length ? `
       <div class="res-section">
         <div class="res-section-label">Nearby Hospitals — Live Map</div>
@@ -227,19 +253,18 @@
             <div>
               <div class="osm-name">${x(h.name)}${h.emergency === 'yes' ? '<span class="badge-em">Emergency</span>' : ''}</div>
               ${h.address ? `<div class="osm-addr">${x(h.address)}</div>` : ''}
-              ${h.phone   ? `<div class="osm-addr">${x(h.phone)}</div>` : ''}
+              ${h.phone   ? `<div class="osm-addr">${x(h.phone)}</div>`   : ''}
             </div>
             <div class="osm-dist">${h.distance_km != null ? h.distance_km + ' km' : ''}</div>
           </div>
         `).join('')}
       </div>` : '';
 
-    // Schemes
     const schemesHTML = d.schemes_eligible?.length ? `
       <div class="res-section">
-        <div class="res-section-label">Eligible Schemes</div>
-        <div class="schemes">
-          ${d.schemes_eligible.map(s => `<span class="scheme-tag">${x(s)}</span>`).join('')}
+        <div class="res-section-label">Eligible Government Schemes (${d.schemes_eligible.length})</div>
+        <div class="schemes-grid">
+          ${d.schemes_eligible.map(s => schemeCard(s)).join('')}
         </div>
       </div>` : '';
 
@@ -249,40 +274,34 @@
           <span>✓ Referral submitted</span>
           <span class="ref-id" id="refIdSpan" onclick="copyId('${x(d.referral_id)}')">${x(d.referral_id)}</span>
         </div>
-
         <div class="summary">
           <div class="summary-cell"><div class="k">Patient</div><div class="v">${x(d.patient_name)}</div></div>
           <div class="summary-cell"><div class="k">Condition</div><div class="v">${x(d.disease_label)}</div></div>
           <div class="summary-cell"><div class="k">Priority</div><div class="v priority-${x(d.priority)}">${x(d.priority)}</div></div>
           <div class="summary-cell"><div class="k">Received</div><div class="v">${new Date(d.received_at).toLocaleTimeString()}</div></div>
         </div>
-
         ${aiHTML}
         ${hospHTML}
         ${osmHTML}
         ${schemesHTML}
       </div>
-
       <a class="new-btn" href="index.html">+ Submit Another Referral</a>
     `;
   }
 
-  // Load data from sessionStorage
+  // ── 6. Load from sessionStorage ───────────────────────────────────────────────
   const raw = sessionStorage.getItem('referralResult');
   if (raw) {
     try {
       render(JSON.parse(raw));
-      sessionStorage.removeItem('referralResult'); // clean up after rendering
+      sessionStorage.removeItem('referralResult');
     } catch {
-      document.getElementById('content').innerHTML = `
-        <div class="no-data">Failed to parse result data. <a href="index.html">Go back</a></div>`;
+      document.getElementById('content').innerHTML =
+        '<div class="no-data">Failed to parse result data. <a href="index.html">Go back</a></div>';
     }
   } else {
-    document.getElementById('content').innerHTML = `
-      <div class="no-data">
-        No referral data found.<br><br>
-        <a href="index.html">← Submit a new referral</a>
-      </div>`;
+    document.getElementById('content').innerHTML =
+      '<div class="no-data">No referral data found.<br><br><a href="index.html">← Submit a new referral</a></div>';
   }
 </script>
 </body>
